@@ -11,14 +11,52 @@ import 'meal_card_widget/add_food_button_widget.dart';
 import 'meal_card_widget/meal_header_widget.dart';
 import 'meal_card_widget/meal_note_widget.dart';
 import 'package:my_diet/services/date_service.dart';
+import 'package:my_diet/services/mock_diet_repository.dart';
+
+void _showEditNoteDialog(BuildContext context, MealModel meal) {
+  final controller = TextEditingController(text: meal.note ?? '');
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Нотатка до: "${meal.title}"'),
+      content: TextField(
+        controller: controller,
+        decoration: const InputDecoration(hintText: 'Введіть нотатку або коментар...', border: OutlineInputBorder()),
+        maxLines: 3,
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Скасувати')),
+        ElevatedButton(
+          onPressed: () {
+            final currentDate = DateService().selectedDate.value;
+
+            // Тепер зберігаємо нотатку у репозиторії!
+            MockDietRepository().updateMealNote(currentDate, meal.id, controller.text.trim());
+
+            Navigator.of(context).pop();
+          },
+          child: const Text('Зберегти'),
+        ),
+      ],
+    ),
+  );
+}
 
 /// [ВУЗОЛ 1]: ГОЛОВНИЙ ВІДЖЕТ КАРТКИ ПРИЙОМУ ЇЖІ
 class MealCardWidget extends StatelessWidget {
   final MealModel meal;
   final bool initiallyExpanded;
   final VoidCallback? onAddFoodPressed;
+  final int index;
 
-  const MealCardWidget({super.key, required this.meal, this.initiallyExpanded = false, this.onAddFoodPressed});
+  const MealCardWidget({
+    super.key,
+    required this.meal,
+    required this.index,
+    this.initiallyExpanded = false,
+    this.onAddFoodPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +67,7 @@ class MealCardWidget extends StatelessWidget {
       color: Colors.white,
       child: ExpansionTile(
         initiallyExpanded: initiallyExpanded,
-        title: MealHeaderWidget(meal: meal),
+        title: MealHeaderWidget(meal: meal, index: index),
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -37,7 +75,13 @@ class MealCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 1. Блок нотатки (якщо вона є)
-                MealNoteWidget(note: meal.note ?? ''),
+                MealNoteWidget(
+                  note: meal.note ?? '',
+                  onTap: () {
+                    // Тут ми показуємо діалог для введення/редагування нотатки
+                    _showEditNoteDialog(context, meal);
+                  },
+                ),
 
                 // 2. Підзаголовок списку страв
                 const Text(
@@ -64,6 +108,10 @@ class MealCardWidget extends StatelessWidget {
                       weight: '${item.weight.toStringAsFixed(0)} г',
                       fa: '${item.phe.toStringAsFixed(0)} ФА',
                       kcal: '${item.calories.toStringAsFixed(0)} ккал',
+                      onDelete: () {
+                        final currentDate = DateService().selectedDate.value;
+                        MockDietRepository().removeFoodFromMeal(currentDate, meal.id, item.id);
+                      },
                     ),
                   ),
 
