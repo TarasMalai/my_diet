@@ -5,8 +5,8 @@
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import '../../models/note_model.dart';
-import 'family_notes_widget/family_notes_full_screen_widget.dart';
+import 'package:my_diet/models/note_model.dart';
+import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/family_notes_full_screen_widget.dart';
 
 class FamilyNotesWidget extends StatefulWidget {
   const FamilyNotesWidget({super.key});

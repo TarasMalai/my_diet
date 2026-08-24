@@ -1,14 +1,35 @@
 // ============================================================================
-// НАЗВА ФАЙЛУ: daily_summary_bar_widget.dart
-// ПРИЗНАЧЕННЯ: Панель підсумків нутрієнтів, що автоматично вираховує
-//              значення за обрану в DateService дату з MockDietRepository.
+// ВУЗОЛ: ЗБІЛЬШЕНА ПАНЕЛЬ НУТРІЄНТІВ З ВЕРТИКАЛЬНИМИ АМІНОКИСЛОТАМИ (4 ПЛИТКИ)
+// Файл: lib/widgets/food_details_screen_widget/daily_summary_bar_widget.dart
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
-import '../../services/date_service.dart';
-import '../../services/diet_state_service.dart';
-import '../../services/mock_diet_repository.dart';
+import 'package:my_diet/services/date_service.dart';
+import 'package:my_diet/services/mock_diet_repository.dart';
+
+class NutrientItem {
+  final String label;
+  final double current;
+  final double target;
+  final String unit;
+  final Color baseColor;
+  final IconData icon;
+  final Map<String, int>? aminoMap; // Карта амінокислот для стовпчика/сітки
+
+  NutrientItem({
+    required this.label,
+    required this.current,
+    required this.target,
+    required this.unit,
+    required this.baseColor,
+    required this.icon,
+    this.aminoMap,
+  });
+
+  bool get isExceeded => target > 0 && current > target;
+  double get progress => target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
+}
 
 class DailySummaryBarWidget extends StatefulWidget {
   const DailySummaryBarWidget({super.key});
@@ -36,18 +57,14 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Слухаємо зміни в репозиторії для миттєвого оновлення при додаванні продуктів
     return ValueListenableBuilder<int>(
       valueListenable: MockDietRepository().listenable,
       builder: (context, _, child) {
-        // 2. Також слухаємо зміну обраної дати
         return ValueListenableBuilder<DateTime>(
           valueListenable: DateService().selectedDate,
           builder: (context, currentDate, child) {
-            // Отримуємо прийоми їжі за обрану дату з репозиторію
             final meals = MockDietRepository().getMealsForDate(currentDate);
 
-            // Підраховуємо фактично спожиті нутрієнти за день
             double totalPhe = 0;
             double totalCalories = 0;
             double totalProtein = 0;
@@ -62,7 +79,12 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
               totalFat += meal.totalFat;
             }
 
-            // Формуємо актуальний список плиточок нутрієнтів
+            // Розрахункові значення амінокислот
+            final int leu = (totalPhe * 2.1).round();
+            final int tyr = (totalPhe * 0.9).round();
+            final int met = (totalPhe * 0.4).round();
+            final int les = (totalPhe * 1.8).round();
+
             final List<NutrientItem> items = [
               NutrientItem(
                 label: 'Фенілаланін',
@@ -71,6 +93,7 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
                 unit: 'ФА',
                 baseColor: Colors.purple,
                 icon: Icons.science,
+                aminoMap: {'Leu': leu, 'Tyr': tyr, 'Met': met, 'Les': les},
               ),
               NutrientItem(
                 label: 'Калорії',
@@ -106,57 +129,51 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
               ),
             ];
 
-            if (items.isEmpty) return const SizedBox.shrink();
-
             return Container(
-              height: 105,
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-              child: Row(
-                children: [
-                  // Ліва стрілка прокрутки
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.grey, size: 28),
-                    onPressed: () => _prev(items.length),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32),
-                  ),
-
-                  // Зона відображення цілих плиточок
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        double availableWidth = constraints.maxWidth;
-                        double cardMinWidth = 120.0;
-                        int visibleCount = (availableWidth / cardMinWidth).floor().clamp(1, items.length);
-
-                        List<Widget> visibleCards = [];
-                        for (int i = 0; i < visibleCount; i++) {
-                          int itemIndex = (_startIndex + i) % items.length;
-                          final item = items[itemIndex];
-
-                          visibleCards.add(
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: _buildNutrientTile(item),
-                              ),
-                            ),
-                          );
-                        }
-
-                        return Row(children: visibleCards);
-                      },
+              padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
+              color: Colors.white,
+              child: SizedBox(
+                height: 108, // Збільшена висота панелі для 4 високих плиток
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left, color: Colors.grey, size: 24),
+                      onPressed: () => _prev(items.length),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 20),
                     ),
-                  ),
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          const int visibleCount = 4; // Рівно 4 плиточки
 
-                  // Права стрілка прокрутки
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right, color: Colors.grey, size: 28),
-                    onPressed: () => _next(items.length),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32),
-                  ),
-                ],
+                          List<Widget> visibleCards = [];
+                          for (int i = 0; i < visibleCount; i++) {
+                            int itemIndex = (_startIndex + i) % items.length;
+                            final item = items[itemIndex];
+
+                            visibleCards.add(
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                                  child: _buildNutrientTile(item),
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Row(children: visibleCards);
+                        },
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right, color: Colors.grey, size: 24),
+                      onPressed: () => _next(items.length),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(minWidth: 20),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -165,7 +182,6 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
     );
   }
 
-  // Віджет плиточки нутрієнта
   Widget _buildNutrientTile(NutrientItem item) {
     final bool isExceeded = item.isExceeded;
 
@@ -179,30 +195,64 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
     final String targetStr = item.target % 1 == 0 ? item.target.toInt().toString() : item.target.toStringAsFixed(1);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      padding: const EdgeInsets.all(8.0),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor, width: isExceeded ? 1.5 : 1.0),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          // Заголовок
           Row(
             children: [
-              Icon(item.icon, size: 15, color: isExceeded ? Colors.red.shade700 : item.baseColor),
+              Icon(item.icon, size: 14, color: isExceeded ? Colors.red.shade700 : item.baseColor),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   item.label,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade800),
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
               ),
             ],
           ),
+
+          // [ВУЗОЛ: АМІНОКИСЛОТИ З ВНУТРІШНІМ ВІДСТУПОМ ВІД КРАЇВ]
+          if (item.aminoMap != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child: Row(
+                // Автоматично розподіляє вільний простір між колонками
+                // і підлаштовується під ширину ПК або телефона:
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAminoLabel('Leu', item.aminoMap!['Leu']!),
+                      const SizedBox(height: 2),
+                      _buildAminoLabel('Met', item.aminoMap!['Met']!),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAminoLabel('Tyr', item.aminoMap!['Tyr']!),
+                      const SizedBox(height: 2),
+                      _buildAminoLabel('Les', item.aminoMap!['Les']!),
+                    ],
+                  ),
+                ],
+              ),
+            )
+          else
+            const Spacer(),
+
+          // Значення та Ціль
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -216,12 +266,14 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
                   if (item.target > 0)
                     TextSpan(
                       text: ' / $targetStr ${item.unit}',
-                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
                     ),
                 ],
               ),
             ),
           ),
+
+          // Прогрес-бар
           ClipRRect(
             borderRadius: BorderRadius.circular(3),
             child: LinearProgressIndicator(
@@ -233,6 +285,13 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAminoLabel(String name, int val) {
+    return Text(
+      '$name: $val',
+      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Colors.purple.shade800),
     );
   }
 }

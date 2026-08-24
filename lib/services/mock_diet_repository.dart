@@ -4,8 +4,8 @@
 // ============================================================================
 
 import 'package:flutter/foundation.dart';
-import '../models/meal_model.dart';
-import '../models/food_item_model.dart';
+import 'package:my_diet/models/meal_model.dart';
+import 'package:my_diet/models/food_item_model.dart';
 
 class MockDietRepository {
   static final MockDietRepository _instance = MockDietRepository._internal();

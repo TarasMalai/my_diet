@@ -3,7 +3,8 @@
 class FoodItemModel {
   final String id;
   final String name;
-  final String category; // <-- Додано категорію
+  final String category;
+  final String manufacturer; // <-- Додано виробника
   final double weight;
   final double phe;
   final double calories;
@@ -14,7 +15,8 @@ class FoodItemModel {
   const FoodItemModel({
     required this.id,
     required this.name,
-    this.category = '', // <-- За замовчуванням порожній рядок
+    this.category = '',
+    this.manufacturer = '', // <-- За замовчуванням порожній рядок
     required this.weight,
     required this.phe,
     required this.calories,
@@ -27,7 +29,8 @@ class FoodItemModel {
     return FoodItemModel(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
-      category: json['category']?.toString() ?? '', // <-- Зчитуємо з JSON
+      category: json['category']?.toString() ?? '',
+      manufacturer: json['manufacturer']?.toString() ?? '', // <-- Зчитуємо з JSON
       weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
       phe: (json['phe'] as num?)?.toDouble() ?? 0.0,
       calories: (json['calories'] as num?)?.toDouble() ?? 0.0,
@@ -41,7 +44,8 @@ class FoodItemModel {
     return {
       'id': id,
       'name': name,
-      'category': category, // <-- Зберігаємо в JSON
+      'category': category,
+      'manufacturer': manufacturer, // <-- Зберігаємо в JSON
       'weight': weight,
       'phe': phe,
       'calories': calories,
@@ -55,6 +59,7 @@ class FoodItemModel {
     String? id,
     String? name,
     String? category,
+    String? manufacturer,
     double? weight,
     double? phe,
     double? calories,
@@ -66,6 +71,7 @@ class FoodItemModel {
       id: id ?? this.id,
       name: name ?? this.name,
       category: category ?? this.category,
+      manufacturer: manufacturer ?? this.manufacturer,
       weight: weight ?? this.weight,
       phe: phe ?? this.phe,
       calories: calories ?? this.calories,

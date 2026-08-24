@@ -5,10 +5,10 @@
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import '../../../models/note_model.dart';
-import 'note_card_widget.dart';
-import 'add_note_dialog_widget.dart';
-import 'edit_note_dialog_widget.dart'; // <--- Імпортуємо наш новий віджет
+import 'package:my_diet/models/note_model.dart';
+import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/note_card_widget.dart';
+import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/add_note_dialog_widget.dart';
+import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/edit_note_dialog_widget.dart'; // <--- Імпортуємо наш новий віджет
 
 class FamilyNotesFullScreen extends StatefulWidget {
   final List<FamilyNote> notes;

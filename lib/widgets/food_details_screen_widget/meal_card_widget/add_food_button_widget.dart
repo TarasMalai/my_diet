@@ -6,7 +6,7 @@
 import 'package:flutter/material.dart';
 
 // Імпорт діалогу з підпапки
-import 'add_food_button_widget/add_food_dialog_widget.dart';
+import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/add_food_button_widget/add_food_dialog_widget.dart';
 
 class AddFoodButtonWidget extends StatelessWidget {
   final DateTime date;

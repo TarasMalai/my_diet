@@ -7,21 +7,20 @@
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import '../screens/food_details_screen.dart';
-import '../services/navigation_service.dart';
+import 'package:my_diet/services/navigation_service.dart';
 // [НОВИЙ ІМПОРТ]: Сервіс глобального управління датою
-import '../services/date_service.dart';
-import '../widgets/main_screen_widget/daily_summary_widget.dart';
+import 'package:my_diet/services/date_service.dart';
+import 'package:my_diet/widgets/main_screen_widget/daily_summary_widget.dart';
 
 // ----------------------------------------------------------------------------
 // ВУЗОЛ 1: ІМПОРТИ ВІДЖЕТІВ ТА МОДУЛІВ
 // ----------------------------------------------------------------------------
-import '../widgets/main_screen_widget/main_app_bar_widget.dart';
-import '../widgets/main_screen_widget/main_app_bar_widget/app_drawer_widget.dart';
-import '../widgets/common_widget/calendar_widget.dart';
-import '../services/mock_diet_repository.dart';
-import '../widgets/main_screen_widget/family_notes_widget.dart';
-import '../widgets/main_screen_widget/databases_navigation_tile_widget.dart';
+import 'package:my_diet/widgets/main_screen_widget/main_app_bar_widget.dart';
+import 'package:my_diet/widgets/main_screen_widget/main_app_bar_widget/app_drawer_widget.dart';
+import 'package:my_diet/widgets/common_widget/calendar_widget.dart';
+import 'package:my_diet/services/mock_diet_repository.dart';
+import 'package:my_diet/widgets/main_screen_widget/family_notes_widget.dart';
+import 'package:my_diet/widgets/main_screen_widget/databases_navigation_tile_widget.dart';
 
 // ----------------------------------------------------------------------------
 // 2. ГОЛОВНИЙ КЛАС ЕКРАНУ (MainScreen)

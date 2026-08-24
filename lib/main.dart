@@ -9,7 +9,7 @@
 import 'package:flutter/material.dart';
 // 1. Імпортуємо ініціалізатор локалей для пакета intl
 import 'package:intl/date_symbol_data_local.dart';
-import 'screens/splash_screen.dart'; // Імпортуємо екран заставки, з якого стартуємо
+import 'package:my_diet/screens/splash_screen.dart'; // Імпортуємо екран заставки, з якого стартуємо
 
 // ----------------------------------------------------------------------------
 // 1. ТОЧКА ВХОДУ (Функція main)

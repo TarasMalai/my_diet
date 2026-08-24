@@ -1,14 +1,16 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: daily_summary_widget.dart
-// ПРИЗНАЧЕННЯ: Віджет блоку "Баланс за день" на головному екрані
+// ПРИЗНАЧЕННЯ: Віджет блоку "Баланс за день" на головному екрані з розгортанням ФА
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
-import '../../services/date_service.dart';
-import '../../services/diet_state_service.dart';
-import '../../services/mock_diet_repository.dart';
-import 'daily_summary_widget/metric_card_widget.dart';
+import 'package:my_diet/services/date_service.dart';
+import 'package:my_diet/services/diet_state_service.dart';
+import 'package:my_diet/services/mock_diet_repository.dart';
+import 'package:my_diet/widgets/main_screen_widget/daily_summary_widget/metric_card_widget.dart';
+import 'package:my_diet/widgets/main_screen_widget/phe_expansion_tile_widget.dart';
+import 'package:my_diet/services/diet_settings_service.dart';
 
 class DailySummaryWidget extends StatefulWidget {
   final VoidCallback onTapDetails;
@@ -24,19 +26,22 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Слухаємо зміну обраної дати
     return ValueListenableBuilder<DateTime>(
       valueListenable: DateService().selectedDate,
       builder: (context, currentDate, child) {
-        // 2. Отримуємо прийоми їжі за обрану дату
         final meals = MockDietRepository().getMealsForDate(currentDate);
 
-        // 3. Підраховуємо фактично спожиті нутрієнти
         double totalPhe = 0;
         double totalCalories = 0;
         double totalProtein = 0;
         double totalCarbs = 0;
         double totalFat = 0;
+
+        // Суми спожитих супутніх амінокислот за день
+        double totalLeu = 0;
+        double totalTyr = 0;
+        double totalMet = 0;
+        double totalLes = 0;
 
         for (var meal in meals) {
           totalPhe += meal.totalPhe;
@@ -44,14 +49,23 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
           totalProtein += meal.totalProtein;
           totalCarbs += meal.totalCarbs;
           totalFat += meal.totalFat;
+
+          // Якщо у прийомах їжі є дані про амінокислоти (наприклад, із сумішей):
+          // totalLeu += meal.totalLeu ?? 0;
+          // totalTyr += meal.totalTyr ?? 0;
+          // totalMet += meal.totalMet ?? 0;
+          // totalLes += meal.totalLes ?? 0;
         }
 
-        // 4. Формуємо список показників
+        // 1. Отримуємо актуальні цілі з сервісу налаштувань
+        final settings = DietSettingsService();
+
+        // 2. Формуємо список показників, витягуючи норми із settings
         final List<NutrientItem> itemsList = [
           NutrientItem(
             label: 'Фенілаланін',
             current: totalPhe,
-            target: 300,
+            target: settings.targetPhe,
             unit: 'ФА',
             baseColor: Colors.purple,
             icon: Icons.science,
@@ -59,7 +73,7 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
           NutrientItem(
             label: 'Калорії',
             current: totalCalories,
-            target: 2000,
+            target: settings.targetCalories,
             unit: 'ккал',
             baseColor: Colors.orange,
             icon: Icons.local_fire_department,
@@ -67,7 +81,7 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
           NutrientItem(
             label: 'Білки',
             current: totalProtein,
-            target: 50,
+            target: settings.targetProtein,
             unit: 'г',
             baseColor: Colors.blue,
             icon: Icons.fitness_center,
@@ -75,7 +89,7 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
           NutrientItem(
             label: 'Вуглеводи',
             current: totalCarbs,
-            target: 250,
+            target: settings.targetCarbs,
             unit: 'г',
             baseColor: Colors.amber,
             icon: Icons.grain,
@@ -83,13 +97,12 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
           NutrientItem(
             label: 'Жири',
             current: totalFat,
-            target: 70,
+            target: settings.targetFat,
             unit: 'г',
             baseColor: Colors.redAccent,
             icon: Icons.opacity,
           ),
         ];
-
         final bool hasAnyExceeded = itemsList.any((item) => item.isExceeded);
 
         return Container(
@@ -132,7 +145,6 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Червоний баннер при перевищенні будь-якого ліміту
                     if (hasAnyExceeded)
                       Container(
                         width: double.infinity,
@@ -146,20 +158,32 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
                         ),
                       ),
 
-                    // Список карток показників (метрики)
+                    // Список показників з розгортанням для Фенілаланіну
                     ListView.separated(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: _isExpanded ? itemsList.length : itemsList.take(2).length,
                       separatorBuilder: (context, index) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
+                        // Якщо це перший елемент (Фенілаланін) — виводимо розгортаний віджет
+                        if (index == 0) {
+                          return PheExpansionTileWidget(
+                            phe: totalPhe,
+                            targetPhe: DietSettingsService().targetPhe,
+                            leu: totalLeu,
+                            tyr: totalTyr,
+                            met: totalMet,
+                            les: totalLes,
+                          );
+                        }
+                        // Для решти показників (Калорії, Білки...) залишаємо стандартні картки
                         return MetricCardWidget(item: itemsList[index]);
                       },
                     ),
 
                     const SizedBox(height: 4),
 
-                    // Кнопка показати всі / згорнути
+                    // Кнопка показати всі / згорнути нутрієнти
                     TextButton.icon(
                       onPressed: () => setState(() => _isExpanded = !_isExpanded),
                       icon: Icon(_isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18),

@@ -4,9 +4,9 @@
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import '../../../../models/meal_model.dart';
-import '../../../../services/date_service.dart';
-import '../../../../services/mock_diet_repository.dart';
+import 'package:my_diet/models/meal_model.dart';
+import 'package:my_diet/services/date_service.dart';
+import 'package:my_diet/services/mock_diet_repository.dart';
 
 class MealHeaderWidget extends StatelessWidget {
   final MealModel meal;

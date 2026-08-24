@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 // Імпортуємо екран детального харчування
-import '../screens/food_details_screen.dart';
+import 'package:my_diet/screens/food_details_screen.dart';
 
 class NavigationService {
   /// Перехід на екран детального споживання їжі.

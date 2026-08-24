@@ -42,7 +42,7 @@ class FoodRowItemWidget extends StatelessWidget {
       padding: const EdgeInsets.all(10.0),
       // [ВУЗОЛ: ДИЗАЙН] Овальний прямокутник із закругленими кутами та оранжевим контуром
       decoration: BoxDecoration(
-        color: Colors.orange.shade50.withOpacity(0.2),
+        color: Colors.orange.shade50.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(color: Colors.orange.shade200, width: 1.0),
       ),

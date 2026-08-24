@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/nutrient_config_model.dart';
-import '../services/nutrient_config_service.dart';
+import 'package:my_diet/models/nutrient_config_model.dart';
 
 /// Глобальний сервіс налаштувань кольорів та іконок нутрієнтів.
 class NutrientConfigService {

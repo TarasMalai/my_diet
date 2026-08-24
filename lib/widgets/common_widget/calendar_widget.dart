@@ -8,7 +8,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 // Імпортуємо наш кастомний діалог із сусідньої папки
-import 'calendar_widget/date_picker_dialog_widget.dart';
+import 'package:my_diet/widgets/common_widget/calendar_widget/date_picker_dialog_widget.dart';
 
 // ----------------------------------------------------------------------------
 // ВУЗОЛ 1: ГОЛОВНИЙ КЛАС ВІДЖЕТА (CalendarWidget)

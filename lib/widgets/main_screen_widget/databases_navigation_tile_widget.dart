@@ -7,7 +7,8 @@
 
 import 'package:flutter/material.dart';
 // Імпортуємо екран «Бази та Ресурси», до якого здійснюється навігація
-import '../../screens/databases_and_resources_screen.dart';
+//import '../../screens/databases_and_resources_screen.dart';
+import 'package:my_diet/screens/databases_and_resources_screen.dart';
 
 // ----------------------------------------------------------------------------
 // ГОЛОВНИЙ КЛАС ВІДЖЕТА (DatabasesNavigationTileWidget)

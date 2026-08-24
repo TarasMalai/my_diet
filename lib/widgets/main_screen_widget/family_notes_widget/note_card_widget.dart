@@ -5,7 +5,7 @@
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import '../../../models/note_model.dart';
+import 'package:my_diet/models/note_model.dart';
 
 class NoteCardWidget extends StatelessWidget {
   final FamilyNote note;

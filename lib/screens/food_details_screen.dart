@@ -6,17 +6,17 @@
 import 'package:flutter/material.dart';
 
 // Сервіси та репозиторії
-import '../services/date_service.dart';
-import '../services/mock_diet_repository.dart';
+import 'package:my_diet/services/date_service.dart';
+import 'package:my_diet/services/mock_diet_repository.dart';
 
 // Моделі
-import '../models/meal_model.dart';
+import 'package:my_diet/models/meal_model.dart';
 
 // Віджети
-import '../widgets/food_details_screen_widget/food_details_app_bar_widget.dart';
-import '../widgets/common_widget/calendar_widget.dart';
-import '../widgets/food_details_screen_widget/daily_summary_bar_widget.dart';
-import '../widgets/food_details_screen_widget/meal_card_widget.dart';
+import 'package:my_diet/widgets/food_details_screen_widget/food_details_app_bar_widget.dart';
+import 'package:my_diet/widgets/common_widget/calendar_widget.dart';
+import 'package:my_diet/widgets/food_details_screen_widget/daily_summary_bar_widget.dart';
+import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget.dart';
 
 /// Екран деталей харчування з можливістю перетягування прийомів їжі (Drag & Drop).
 class FoodDetailsScreen extends StatelessWidget {
@@ -116,8 +116,9 @@ class FoodDetailsScreen extends StatelessWidget {
                       buildDefaultDragHandles: false, // [ВУЗОЛ]: Вимикаємо стандартний іконку справа
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       itemCount: meals.length,
-                      onReorder: (oldIndex, newIndex) {
-                        MockDietRepository().reorderMeals(currentDate, oldIndex, newIndex);
+                      onReorderItem: (oldIndex, newIndex) {
+                        final item = meals.removeAt(oldIndex);
+                        meals.insert(newIndex, item);
                       },
                       itemBuilder: (context, index) {
                         final meal = meals[index];
@@ -146,7 +147,9 @@ class FoodDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), offset: const Offset(0, -2), blurRadius: 4)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), offset: const Offset(0, -2), blurRadius: 4),
+          ],
         ),
         child: SafeArea(
           child: ElevatedButton.icon(
