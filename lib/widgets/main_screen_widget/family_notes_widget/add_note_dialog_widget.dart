@@ -7,6 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/note_model.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА ДІАЛОГУ СТВОРЕННЯ НОТАТКИ (AddNoteDialogWidget)
+// ----------------------------------------------------------------------------
 class AddNoteDialogWidget extends StatefulWidget {
   final Function(FamilyNote) onNoteAdded;
 
@@ -16,7 +19,13 @@ class AddNoteDialogWidget extends StatefulWidget {
   State<AddNoteDialogWidget> createState() => _AddNoteDialogWidgetState();
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: СТАН ВІДЖЕТА ДІАЛОГУ (_AddNoteDialogWidgetState)
+// ----------------------------------------------------------------------------
 class _AddNoteDialogWidgetState extends State<AddNoteDialogWidget> {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: КОНТРОЛЕРИ ТА ПОЧАТКОВІ ЗМІННІ СТАНУ
+  // --------------------------------------------------------------------------
   final TextEditingController _textController = TextEditingController();
   NotePriority _selectedPriority = NotePriority.low; // За замовчуванням низький (зелений)
 
@@ -43,6 +52,9 @@ class _AddNoteDialogWidgetState extends State<AddNoteDialogWidget> {
     }
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.2]: ВІЗУАЛЬНИЙ КАРКАС ТА ЕЛЕМЕНТИ ІНТЕРФЕЙСУ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -57,6 +69,9 @@ class _AddNoteDialogWidgetState extends State<AddNoteDialogWidget> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.1]: ЗАГОЛОВОК ТА ПОЛЕ ВВЕДЕННЯ ТЕКСТУ
+          // ------------------------------------------------------------------
           const Text(
             'Нова нотатка',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
@@ -77,6 +92,9 @@ class _AddNoteDialogWidgetState extends State<AddNoteDialogWidget> {
           ),
           const SizedBox(height: 18),
 
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.2]: БЛОК ВИБОРУ ПРІОРИТЕТУ (ЧІПИ)
+          // ------------------------------------------------------------------
           // Підпис перед вибором пріоритету
           const Text(
             'Оберіть пріоритет повідомлення:',
@@ -109,7 +127,9 @@ class _AddNoteDialogWidgetState extends State<AddNoteDialogWidget> {
           ),
           const SizedBox(height: 24),
 
-          // Кнопка збереження
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.3]: КНОПКА ЗБЕРЕЖЕННЯ
+          // ------------------------------------------------------------------
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

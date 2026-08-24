@@ -1,10 +1,14 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: nutrient_tile_widget.dart
+// ПРОЄКТ: Моя дієта
 // ПРИЗНАЧЕННЯ: Плитка відображення додаткових показників (Волокна, Вода, БЖУ...)
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА ПЛИТКИ ПОКАЗНИКА (NutrientTileWidget)
+// ----------------------------------------------------------------------------
 class NutrientTileWidget extends StatelessWidget {
   final String title;
   final String value;
@@ -21,6 +25,9 @@ class NutrientTileWidget extends StatelessWidget {
     required this.color,
   });
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2]: ВІЗУАЛЬНИЙ КАРКАС ТА СТРУКТУРА ПЛИТКИ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,8 +39,15 @@ class NutrientTileWidget extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.1]: ЕМОДЗІ-ІКОНКА ПОКАЗНИКА
+          // ------------------------------------------------------------------
           Text(emoji, style: const TextStyle(fontSize: 20)),
           const SizedBox(width: 8),
+
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2]: ТЕКСТОВИЙ БЛОК (НАЗВА ТА ЗНАЧЕННЯ З ОДИНИЦЕЮ ВИМІРУ)
+          // ------------------------------------------------------------------
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,7 +62,7 @@ class NutrientTileWidget extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: value,
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
                       ),
                       TextSpan(
                         text: ' $unit',

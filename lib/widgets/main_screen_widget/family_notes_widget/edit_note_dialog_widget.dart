@@ -7,6 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/note_model.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА ДІАЛОГУ РЕДАГУВАННЯ НОТАТКИ (EditNoteDialogWidget)
+// ----------------------------------------------------------------------------
 class EditNoteDialogWidget extends StatefulWidget {
   final FamilyNote note;
   final Function(FamilyNote) onNoteEdited;
@@ -17,7 +20,13 @@ class EditNoteDialogWidget extends StatefulWidget {
   State<EditNoteDialogWidget> createState() => _EditNoteDialogWidgetState();
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: СТАН ВІДЖЕТА ДІАЛОГУ РЕДАГУВАННЯ (_EditNoteDialogWidgetState)
+// ----------------------------------------------------------------------------
 class _EditNoteDialogWidgetState extends State<EditNoteDialogWidget> {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: КОНТРОЛЕРИ ТА ЖИТЦЕВИЙ ЦИКЛ СТАНУ (INITSTATE / DISPOSE)
+  // --------------------------------------------------------------------------
   late TextEditingController _textController;
   late NotePriority _selectedPriority;
 
@@ -59,6 +68,9 @@ class _EditNoteDialogWidgetState extends State<EditNoteDialogWidget> {
     }
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.2]: ВІЗУАЛЬНИЙ КАРКАС ТА ЕЛЕМЕНТИ ІНТЕРФЕЙСУ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -73,6 +85,9 @@ class _EditNoteDialogWidgetState extends State<EditNoteDialogWidget> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.1]: ЗАГОЛОВОК ТА ПОЛЕ ВВЕДЕННЯ ТЕКСТУ
+          // ------------------------------------------------------------------
           const Text(
             'Редагувати нотатку',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey),
@@ -93,6 +108,9 @@ class _EditNoteDialogWidgetState extends State<EditNoteDialogWidget> {
           ),
           const SizedBox(height: 18),
 
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.2]: БЛОК ВИБОРУ ПРІОРИТЕТУ (ЧІПИ)
+          // ------------------------------------------------------------------
           // Підпис перед вибором пріоритету
           const Text(
             'Оберіть пріоритет повідомлення:',
@@ -125,7 +143,9 @@ class _EditNoteDialogWidgetState extends State<EditNoteDialogWidget> {
           ),
           const SizedBox(height: 24),
 
-          // Кнопка збереження змін
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.3]: КНОПКА ЗБЕРЕЖЕННЯ ЗМІН
+          // ------------------------------------------------------------------
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(

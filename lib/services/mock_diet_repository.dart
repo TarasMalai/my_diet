@@ -1,28 +1,40 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: mock_diet_repository.dart
-// ПРИЗНАЧЕННЯ: Сховище даних із підтримкою додавання, видалення та сортування прийомів
+// ПРОЄКТ: Моя дієта
+// ПРИЗНАЧЕННЯ: Репозиторій даних з підтримкою додавання, видалення, редагування та сортування прийомів їжі
 // ============================================================================
 
 import 'package:flutter/foundation.dart';
 import 'package:my_diet/models/meal_model.dart';
 import 'package:my_diet/models/food_item_model.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ТЕСТОВИЙ РЕПОЗИТОРІЙ ДІЄТИ (MockDietRepository - Singleton)
+// ----------------------------------------------------------------------------
 class MockDietRepository {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.1]: РЕАЛІЗАЦІЯ SINGLETON ТА СПОВІЩЕННЯ ПРО ЗМІНИ
+  // --------------------------------------------------------------------------
   static final MockDietRepository _instance = MockDietRepository._internal();
   factory MockDietRepository() => _instance;
 
   final ValueNotifier<int> _changeNotifier = ValueNotifier<int>(0);
   ValueListenable<int> get listenable => _changeNotifier;
 
+  // Локальна база даних у пам'яті: "РРРР-ММ-ДД" -> Список прийомів їжі
   final Map<String, List<MealModel>> _database = {};
 
   MockDietRepository._internal();
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.2]: ДОПОМІЖНІ МЕТОДИ ТА ОТРЕМАЕННЯ ДАНИХ
+  // --------------------------------------------------------------------------
+  /// Форматування дати у зручний ключ для ключового сховища
   String _formatKey(DateTime date) {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 
-  /// Отримати прийоми їжі за дату (за замовчуванням створює 3 базові)
+  /// Отримати прийоми їжі за обрану дату (за замовчуванням створює 3 базові)
   List<MealModel> getMealsForDate(DateTime date) {
     final key = _formatKey(date);
     if (!_database.containsKey(key)) {
@@ -35,7 +47,10 @@ class MockDietRepository {
     return _database[key]!;
   }
 
-  /// [ВУЗОЛ 1]: Створення нового прийому їжі (наприклад, "Перекус")
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2]: УПРАВЛІННЯ ПРИЙОМАМИ ЇЖІ (Створення, Видалення, Сортування)
+  // --------------------------------------------------------------------------
+  /// Створення нового прийому їжі (наприклад, "Перекус")
   void addMeal(DateTime date, String title) {
     final meals = getMealsForDate(date);
     final newMeal = MealModel(id: 'm_${DateTime.now().millisecondsSinceEpoch}', title: title.toUpperCase(), items: []);
@@ -44,7 +59,7 @@ class MockDietRepository {
     _notifyListeners();
   }
 
-  /// [ВУЗОЛ 2]: Видалення цілого прийому їжі
+  /// Видалення цілого прийому їжі
   void deleteMeal(DateTime date, String mealId) {
     final meals = getMealsForDate(date);
     meals.removeWhere((m) => m.id == mealId);
@@ -52,7 +67,7 @@ class MockDietRepository {
     _notifyListeners();
   }
 
-  /// [ВУЗОЛ 3]: Зміна порядку прийомів їжі (Drag and Drop)
+  /// Зміна порядку прийомів їжі (Drag and Drop)
   void reorderMeals(DateTime date, int oldIndex, int newIndex) {
     final meals = getMealsForDate(date);
     if (oldIndex < newIndex) {
@@ -64,6 +79,25 @@ class MockDietRepository {
     _notifyListeners();
   }
 
+  /// Повне очищення списку продуктів у прийомі їжі
+  void clearMeal(DateTime date, String mealId) {
+    final meals = getMealsForDate(date);
+    final mealIndex = meals.indexWhere((m) => m.id == mealId);
+    if (mealIndex != -1) {
+      meals[mealIndex] = MealModel(
+        id: meals[mealIndex].id,
+        title: meals[mealIndex].title,
+        items: [],
+        note: meals[mealIndex].note,
+      );
+      _database[_formatKey(date)] = List.from(meals);
+    }
+    _notifyListeners();
+  }
+
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 3]: УПРАВЛІННЯ ПРОДУКТАМИ В ПРИЙОМІ ЇЖІ
+  // --------------------------------------------------------------------------
   /// Додати продукт до конкретного прийому їжі
   void addFoodToMeal(DateTime date, String mealId, FoodItemModel item) {
     final meals = getMealsForDate(date);
@@ -98,6 +132,9 @@ class MockDietRepository {
     _notifyListeners();
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 4]: УПРАВЛІННЯ НОТАТКАМИ ТА ОНОВЛЕННЯ СТАНУ
+  // --------------------------------------------------------------------------
   /// Оновити нотатку для прийому їжі
   void updateMealNote(DateTime date, String mealId, String note) {
     final meals = getMealsForDate(date);
@@ -110,22 +147,7 @@ class MockDietRepository {
     _notifyListeners();
   }
 
-  /// Очистити прийом їжі
-  void clearMeal(DateTime date, String mealId) {
-    final meals = getMealsForDate(date);
-    final mealIndex = meals.indexWhere((m) => m.id == mealId);
-    if (mealIndex != -1) {
-      meals[mealIndex] = MealModel(
-        id: meals[mealIndex].id,
-        title: meals[mealIndex].title,
-        items: [],
-        note: meals[mealIndex].note,
-      );
-      _database[_formatKey(date)] = List.from(meals);
-    }
-    _notifyListeners();
-  }
-
+  /// Сповістити слухачів про зміну даних
   void _notifyListeners() {
     _changeNotifier.value = DateTime.now().millisecondsSinceEpoch;
   }

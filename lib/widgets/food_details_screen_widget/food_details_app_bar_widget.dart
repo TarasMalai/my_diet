@@ -1,6 +1,8 @@
 // ============================================================================
-// ВУЗОЛ: ВЕРХНЯ ПАНЕЛЬ ЕКРАНА ДЕТАЛЕЙ ХАРЧУВАННЯ (FOOD DETAILS APP BAR)
-// Файл: lib/widgets/food_details_screen/food_details_app_bar_widget.dart
+// НАЗВА ФАЙЛУ: food_details_app_bar_widget.dart
+// ПРОЄКТ: Моя дієта
+// ПРИЗНАЧЕННЯ: Верхня панель (AppBar) екрана деталей харчування.
+//              Містить кнопку повернення, заголовок та меню опцій (експорт, налаштування).
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -20,14 +22,14 @@ class FoodDetailsAppBarWidget extends StatelessWidget implements PreferredSizeWi
   const FoodDetailsAppBarWidget({super.key, this.title = 'Деталі харчування', this.onExport, this.onSettings});
 
   // --------------------------------------------------------------------------
-  // ОБОБОВ'ЯЗКОВА ПЕРЕВИЗНАЧЕНА ВЛАСТИВІСТЬ ДЛЯ PreferredSizeWidget
+  // [ВУЗОЛ 1]: ФІКСОВАНА ВИСОТА ПАНЕЛІ (preferredSize)
   // --------------------------------------------------------------------------
   // Вказує Flutter'у фіксовану стандартну висоту для AppBar (kToolbarHeight = 56.0 логічних пікселів)
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   // --------------------------------------------------------------------------
-  // МЕТОД ПОБУДОВИ ВІДЖЕТА (build)
+  // [ВУЗОЛ 2]: ВІЗУАЛЬНИЙ КАРКАС ПАНЕЛІ (BUILD)
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,7 @@ class FoodDetailsAppBarWidget extends StatelessWidget implements PreferredSizeWi
       automaticallyImplyLeading: false,
 
       // ----------------------------------------------------------------------
-      // ВУЗОЛ 1: КНОПКА "НАЗАД"
+      // [ВУЗОЛ 2.1]: КНОПКА "НАЗАД"
       // ----------------------------------------------------------------------
       // `leading` відповідає за ліву частину AppBar
       leading: IconButton(
@@ -52,12 +54,12 @@ class FoodDetailsAppBarWidget extends StatelessWidget implements PreferredSizeWi
       ),
 
       // ----------------------------------------------------------------------
-      // ВУЗОЛ 2: ЗАГОЛОВОК ЕКРАНА
+      // [ВУЗОЛ 2.2]: ЗАГОЛОВОК ЕКРАНА
       // ----------------------------------------------------------------------
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
 
       // ----------------------------------------------------------------------
-      // ВУЗОЛ 3: ВИРИНАЮЧЕ МЕНЮ ОПЦІЙ (3 КРАПКИ)
+      // [ВУЗОЛ 2.3]: ВИРИНАЮЧЕ МЕНЮ ОПЦІЙ (3 КРАПКИ)
       // ----------------------------------------------------------------------
       // `actions` відповідає за праву частину AppBar (масив віджетів)
       actions: [

@@ -7,6 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/note_model.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА КАРТКИ НОТАТКИ (NoteCardWidget)
+// ----------------------------------------------------------------------------
 class NoteCardWidget extends StatelessWidget {
   final FamilyNote note;
   final VoidCallback? onEdit; // Колбек для редагування
@@ -14,6 +17,9 @@ class NoteCardWidget extends StatelessWidget {
 
   const NoteCardWidget({super.key, required this.note, this.onEdit, this.onDelete});
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2]: ВІЗУАЛЬНИЙ КАРКАС ТА СТРУКТУРА КАРТКИ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -30,7 +36,9 @@ class NoteCardWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Шапка картки: Автор, час та дії (редагування/видалення)
+            // ------------------------------------------------------------------
+            // [ВУЗОЛ 2.1]: ШАПКА КАРТКИ (АВТОР, ЧАС ТА КНОПКИ ДІЙ)
+            // ------------------------------------------------------------------
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -66,10 +74,14 @@ class NoteCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 8),
 
-            // Текст повідомлення
+            // ------------------------------------------------------------------
+            // [ВУЗОЛ 2.2]: ТЕКСТОВИЙ ВМІСТ ПОВІДОМЛЕННЯ
+            // ------------------------------------------------------------------
             Text(note.content, style: const TextStyle(fontSize: 14, color: Colors.black87)),
 
-            // Блок вкладеного файлу (якщо він є)
+            // ------------------------------------------------------------------
+            // [ВУЗОЛ 2.3]: БЛОК ВКЛАДЕНОГО ФАЙЛУ (ЯКЩО ВІН ІСНУЄ)
+            // ------------------------------------------------------------------
             if (note.attachmentPath != null) ...[
               const SizedBox(height: 10),
               Container(

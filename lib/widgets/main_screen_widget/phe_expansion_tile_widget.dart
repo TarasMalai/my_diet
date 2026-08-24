@@ -1,10 +1,14 @@
 // ============================================================================
-// ВУЗОЛ: РОЗГОРТАНА ПЛИТКА ФЕНІЛАЛАНІНУ ТА СУПУТНІХ АМІНОКИСЛОТ
-// Файл: lib/widgets/main_screen_widget/phe_expansion_tile_widget.dart
+// НАЗВА ФАЙЛУ: phe_expansion_tile_widget.dart
+// ПРОЄКТ: Моя дієта
+// ПРИЗНАЧЕННЯ: Розгорнута плитка фенілаланіну та супутніх амінокислот
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА РОЗГОРТАННЯ ФА (PheExpansionTileWidget)
+// ----------------------------------------------------------------------------
 class PheExpansionTileWidget extends StatefulWidget {
   final double phe;
   final double? targetPhe; // Необов'язкове цільове значення (null або >0)
@@ -27,9 +31,18 @@ class PheExpansionTileWidget extends StatefulWidget {
   State<PheExpansionTileWidget> createState() => _PheExpansionTileWidgetState();
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: СТАН ВІДЖЕТА (_PheExpansionTileWidgetState)
+// ----------------------------------------------------------------------------
 class _PheExpansionTileWidgetState extends State<PheExpansionTileWidget> {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ЗМІННІ СТАНУ
+  // --------------------------------------------------------------------------
   bool _isExpanded = false;
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.2]: ВІЗУАЛЬНИЙ КАРКАС ТА ЛОГІКА (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final double target = widget.targetPhe ?? 0;
@@ -57,6 +70,9 @@ class _PheExpansionTileWidgetState extends State<PheExpansionTileWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.1]: ОСНОВНА ЧАСТИНА ПЛИТКИ (ГОЛОВНИЙ РЯДОК ФА)
+          // ------------------------------------------------------------------
           InkWell(
             onTap: () => setState(() => _isExpanded = !_isExpanded),
             borderRadius: BorderRadius.circular(14.0),
@@ -125,7 +141,9 @@ class _PheExpansionTileWidgetState extends State<PheExpansionTileWidget> {
             ),
           ),
 
-          // Супутні амінокислоти розгортаються незалежно від наявності цілі
+          // ------------------------------------------------------------------
+          // [ВУЗОЛ 2.2.2]: ВИДАВАННЯ СУПУТНІХ АМІНОКИСЛОТ ПРИ РОЗГОРТАННІ
+          // ------------------------------------------------------------------
           if (_isExpanded) ...[
             const Divider(height: 1, thickness: 1, indent: 12, endIndent: 12),
             Padding(
@@ -156,6 +174,9 @@ class _PheExpansionTileWidgetState extends State<PheExpansionTileWidget> {
     );
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.3]: ДОПОМІЖНИЙ МЕТОД ПОБУДОВИ КАРТКИ АМІНОКИСЛОТИ
+  // --------------------------------------------------------------------------
   Widget _buildAminoCard(String title, double value, Color accentColor) {
     final String valStr = value % 1 == 0 ? value.toInt().toString() : value.toStringAsFixed(1);
 

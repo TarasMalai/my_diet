@@ -8,13 +8,16 @@
 import 'package:flutter/material.dart';
 
 // ----------------------------------------------------------------------------
-// 1. ГОЛОВНИЙ КЛАС БОКОВОГО МЕНЮ (AppDrawerWidget)
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС БОКОВОГО МЕНЮ (AppDrawerWidget)
 // ----------------------------------------------------------------------------
+/// Виринаюче бокове меню правого або лівого боку (EndDrawer / Drawer).
+/// [ВУЗОЛ 1.0: StatelessWidget]
+/// Служить для швидкої навігації до налаштувань, сімейного доступу та довідки.
 class AppDrawerWidget extends StatelessWidget {
   const AppDrawerWidget({super.key});
 
   // --------------------------------------------------------------------------
-  // ВУЗОЛ 1.1: ВІЗУАЛЬНИЙ КАРКАС МЕНЮ (BUILD)
+  // [ВУЗОЛ 1.1]: ВІЗУАЛЬНИЙ КАРКАС МЕНЮ (BUILD)
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
@@ -24,7 +27,7 @@ class AppDrawerWidget extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           // ------------------------------------------------------------------
-          // ВУЗОЛ 1.1.1: ШАПКА МЕНЮ (Header)
+          // [ВУЗОЛ 1.1.1]: ШАПКА МЕНЮ (Header)
           // ------------------------------------------------------------------
           const DrawerHeader(
             decoration: BoxDecoration(color: Colors.green),
@@ -43,9 +46,9 @@ class AppDrawerWidget extends StatelessWidget {
           ),
 
           // ------------------------------------------------------------------
-          // ВУЗОЛ 1.1.2: ПУНКТИ МЕНЮ (Items)
+          // [ВУЗОЛ 1.1.2]: ПУНКТИ МЕНЮ (Items)
           // ------------------------------------------------------------------
-          // Пункт 1: Налаштування
+          // [ВУЗОЛ 1.1.2.1: Налаштування]
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Налаштування'),
@@ -56,7 +59,7 @@ class AppDrawerWidget extends StatelessWidget {
             },
           ),
 
-          // Пункт 2: Профіль сина (або сімейна підписка)
+          // [ВУЗОЛ 1.1.2.2: Сімейний доступ]
           ListTile(
             leading: const Icon(Icons.family_restroom),
             title: const Text('Сімейний доступ'),
@@ -66,7 +69,7 @@ class AppDrawerWidget extends StatelessWidget {
             },
           ),
 
-          // Пункт 3: Про програму
+          // [ВУЗОЛ 1.1.2.3: Про програму]
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('Про програму'),

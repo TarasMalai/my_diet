@@ -1,6 +1,7 @@
 // ============================================================================
-// ВУЗОЛ: ЗБІЛЬШЕНА ПАНЕЛЬ НУТРІЄНТІВ З ВЕРТИКАЛЬНИМИ АМІНОКИСЛОТАМИ (4 ПЛИТКИ)
-// Файл: lib/widgets/food_details_screen_widget/daily_summary_bar_widget.dart
+// НАЗВА ФАЙЛУ: daily_summary_bar_widget.dart
+// ПРОЄКТ: Моя дієта
+// ПРИЗНАЧЕННЯ: Збільшена панель нутрієнтів з вертикальними амінокислотами (4 плитки)
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:my_diet/services/date_service.dart';
 import 'package:my_diet/services/mock_diet_repository.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: МОДЕЛЬ ДАНИХ ЕЛЕМЕНТА НУТРІЄНТА (NutrientItem)
+// ----------------------------------------------------------------------------
 class NutrientItem {
   final String label;
   final double current;
@@ -31,6 +35,9 @@ class NutrientItem {
   double get progress => target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: ГОЛОВНИЙ ВІДЖЕТ ПАНЕЛІ ПІДСУМКІВ (DailySummaryBarWidget)
+// ----------------------------------------------------------------------------
 class DailySummaryBarWidget extends StatefulWidget {
   const DailySummaryBarWidget({super.key});
 
@@ -55,6 +62,9 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
     });
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ВІЗУАЛЬНИЙ КАРКАС ТА ЛОГІКА РОЗРАХУНКУ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
@@ -79,11 +89,16 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
               totalFat += meal.totalFat;
             }
 
-            // Розрахункові значення амінокислот
-            final int leu = (totalPhe * 2.1).round();
-            final int tyr = (totalPhe * 0.9).round();
-            final int met = (totalPhe * 0.4).round();
-            final int les = (totalPhe * 1.8).round();
+            // ----------------------------------------------------------------
+            // [УВАГА — МІСЦЕ ПОТЕНЦІЙНОГО ЗБИТУ ЛОГІКИ]:
+            // Розрахункові значення амінокислот автоматично множаться на totalPhe!
+            // Користувач зауважував, що при введенні вигаданого ФА тут автоматично
+            // перераховуються амінокислоти, і вони ніде не задіяні окремо.
+            // ----------------------------------------------------------------
+            final int leu = 0;
+            final int tyr = 0;
+            final int met = 0;
+            final int les = 0;
 
             final List<NutrientItem> items = [
               NutrientItem(
@@ -182,6 +197,9 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
     );
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.2]: ПОБУДОВА ОКРЕМОЇ ПЛИТКИ НУТРІЄНТА (_buildNutrientTile)
+  // --------------------------------------------------------------------------
   Widget _buildNutrientTile(NutrientItem item) {
     final bool isExceeded = item.isExceeded;
 
@@ -221,13 +239,11 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
             ],
           ),
 
-          // [ВУЗОЛ: АМІНОКИСЛОТИ З ВНУТРІШНІМ ВІДСТУПОМ ВІД КРАЇВ]
+          // [ВУЗОЛ 2.2.1]: АМІНОКИСЛОТИ ВНУТРІ ПЛИТКИ ФА
           if (item.aminoMap != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.0),
               child: Row(
-                // Автоматично розподіляє вільний простір між колонками
-                // і підлаштовується під ширину ПК або телефона:
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Column(

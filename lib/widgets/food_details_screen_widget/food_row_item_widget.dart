@@ -1,12 +1,13 @@
 // ============================================================================
-// ВУЗОЛ: РЯДОК ОКРЕМОГО ПРОДУКТУ/СТРАВИ (FOOD ROW ITEM WIDGET)
-// Файл: lib/widgets/food_details_screen/food_row_item_widget.dart
+// НАЗВА ФАЙЛУ: food_row_item_widget.dart
+// ПРОЄКТ: Моя дієта
+// ПРИЗНАЧЕННЯ: Рядок окремого продукту або страви у списку спожитого.
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
 /// Віджет відображення інформації про один спожитий продукт або страву.
-/// Виводит назву, вагу/об'єм, кількість фенілаланіну (ФА) та калорійність + кнопку видалення.
+/// Виводить назву, вагу/об'єм, кількість фенілаланіну (ФА) та калорійність + кнопку видалення.
 class FoodRowItemWidget extends StatelessWidget {
   /// Назва продукту (наприклад, "Яблуко печене")
   final String name;
@@ -33,14 +34,15 @@ class FoodRowItemWidget extends StatelessWidget {
   });
 
   // --------------------------------------------------------------------------
-  // МЕТОД ПОБУДОВИ ВІДЖЕТА (build)
+  // [ВУЗОЛ 1]: ВІЗУАЛЬНИЙ КАРКАС РЯДКА (BUILD)
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4.0),
       padding: const EdgeInsets.all(10.0),
-      // [ВУЗОЛ: ДИЗАЙН] Овальний прямокутник із закругленими кутами та оранжевим контуром
+      // [ВУЗОЛ 1.1]: СТИЛІЗАЦІЯ ТА КОНТУР
+      // Овальний прямокутник із закругленими кутами та легким оранжевим тлом/контуром
       decoration: BoxDecoration(
         color: Colors.orange.shade50.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(12.0),
@@ -50,7 +52,7 @@ class FoodRowItemWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // ------------------------------------------------------------------
-          // ВУЗОЛ 1: НАЗВА ТА ВАГА ПРОДУКТУ (Ліва частина)
+          // [ВУЗОЛ 1.2]: НАЗВА ТА ВАГА ПРОДУКТУ (Ліва частина)
           // ------------------------------------------------------------------
           Expanded(
             child: Column(
@@ -69,7 +71,7 @@ class FoodRowItemWidget extends StatelessWidget {
           const SizedBox(width: 8),
 
           // ------------------------------------------------------------------
-          // ВУЗОЛ 2: ПОКАЗНИКИ ФА ТА КАЛОРІЙ (Права частина)
+          // [ВУЗОЛ 1.3]: ПОКАЗНИКИ ФА ТА КАЛОРІЙ (Права частина)
           // ------------------------------------------------------------------
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -85,7 +87,7 @@ class FoodRowItemWidget extends StatelessWidget {
           const SizedBox(width: 4),
 
           // ------------------------------------------------------------------
-          // ВУЗОЛ 3: КНОПКА ВИДАЛЕННЯ (Смітник)
+          // [ВУЗОЛ 1.4]: КНОПКА ВИДАЛЕННЯ (Іконка смітника)
           // ------------------------------------------------------------------
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),

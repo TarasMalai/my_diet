@@ -11,13 +11,16 @@ import 'package:flutter/material.dart';
 import 'package:my_diet/screens/databases_and_resources_screen.dart';
 
 // ----------------------------------------------------------------------------
-// ГОЛОВНИЙ КЛАС ВІДЖЕТА (DatabasesNavigationTileWidget)
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА ПЛИТКИ НАВІГАЦІЇ (DatabasesNavigationTileWidget)
 // ----------------------------------------------------------------------------
 /// Stateless віджет, що представляє собою інтерактивну картку-плитку з іконкою,
 /// заголовком, описом та стрілочкою переходу.
 class DatabasesNavigationTileWidget extends StatelessWidget {
   const DatabasesNavigationTileWidget({super.key});
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.1]: ВІЗУАЛЬНИЙ КАРКАС ТА ОБРОБКА НАТИСКАННЯ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -35,6 +38,9 @@ class DatabasesNavigationTileWidget extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: Row(
               children: [
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 1.1.1]: ІКОНКА РОЗДІЛУ
+                // ------------------------------------------------------------
                 // Круглий контейнер з іконкою розділу
                 Container(
                   padding: const EdgeInsets.all(10),
@@ -43,6 +49,9 @@ class DatabasesNavigationTileWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
 
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 1.1.2]: ТЕКСТОВИЙ БЛОК (ЗАГОЛОВОК ТА ОПИС)
+                // ------------------------------------------------------------
                 // Текстовий блок: заголовок та підзаголовок опису
                 const Expanded(
                   child: Column(
@@ -61,6 +70,9 @@ class DatabasesNavigationTileWidget extends StatelessWidget {
                   ),
                 ),
 
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 1.1.3]: ІНДИКАТОР ПЕРЕХОДУ (СТРІЛОЧКА)
+                // ------------------------------------------------------------
                 // Стрілочка вказує на те, що елемент є клікабельним (веде далі)
                 const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.teal),
               ],

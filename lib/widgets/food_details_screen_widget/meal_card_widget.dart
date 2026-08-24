@@ -1,7 +1,7 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: meal_card_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Головна картка прийому їжі на основі MealModel
+// ПРИЗНАЧЕННЯ: Головна картка прийому їжі на основі MealModel (розгортається, містить нотатку, список страв та кнопку додавання)
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -13,6 +13,9 @@ import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/meal
 import 'package:my_diet/services/date_service.dart';
 import 'package:my_diet/services/mock_diet_repository.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ДІАЛОГОВЕ ВІКНО РЕДАГУВАННЯ НОТАТКИ (_showEditNoteDialog)
+// ----------------------------------------------------------------------------
 void _showEditNoteDialog(BuildContext context, MealModel meal) {
   final controller = TextEditingController(text: meal.note ?? '');
 
@@ -31,7 +34,7 @@ void _showEditNoteDialog(BuildContext context, MealModel meal) {
           onPressed: () {
             final currentDate = DateService().selectedDate.value;
 
-            // Тепер зберігаємо нотатку у репозиторії!
+            // Зберігаємо нотатку у репозиторії
             MockDietRepository().updateMealNote(currentDate, meal.id, controller.text.trim());
 
             Navigator.of(context).pop();
@@ -43,7 +46,9 @@ void _showEditNoteDialog(BuildContext context, MealModel meal) {
   );
 }
 
-/// [ВУЗОЛ 1]: ГОЛОВНИЙ ВІДЖЕТ КАРТКИ ПРИЙОМУ ЇЖІ
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: ГОЛОВНИЙ ВІДЖЕТ КАРТКИ ПРИЙОМУ ЇЖІ (MealCardWidget)
+// ----------------------------------------------------------------------------
 class MealCardWidget extends StatelessWidget {
   final MealModel meal;
   final bool initiallyExpanded;
@@ -58,6 +63,9 @@ class MealCardWidget extends StatelessWidget {
     this.onAddFoodPressed,
   });
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ВІЗУАЛЬНИЙ КАРКАС ТА РОЗГОТРУВАННЯ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -74,26 +82,29 @@ class MealCardWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 1. Блок нотатки (якщо вона є)
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 2.2]: БЛОК НОТАТКИ ПРИЙОМУ ЇЖІ
+                // ------------------------------------------------------------
                 MealNoteWidget(
                   note: meal.note ?? '',
                   onTap: () {
-                    // Тут ми показуємо діалог для введення/редагування нотатки
+                    // Показуємо діалог для введення/редагування нотатки
                     _showEditNoteDialog(context, meal);
                   },
                 ),
 
-                // 2. Підзаголовок списку страв
+                // Підзаголовок списку страв
                 const Text(
                   "З'їдені страви та продукти:",
                   style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey),
                 ),
                 const SizedBox(height: 6.0),
 
-                // 3. Список продуктів або повідомлення "Порожньо"
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 2.3]: СПИСОК ПРОДУКТІВ АБО СТАН "ПОРОЖНЬО"
+                // ------------------------------------------------------------
                 if (meal.items.isEmpty)
                   const Padding(
-                    // ВИПРАВЛЕНО: Використовуємо EdgeInsets.symmetric замість EdgeInsets.vertical для const
                     padding: EdgeInsets.symmetric(vertical: 8.0),
                     child: Text(
                       'Поки немає доданих продуктів',
@@ -101,7 +112,7 @@ class MealCardWidget extends StatelessWidget {
                     ),
                   )
                 else
-                  // Відображаємо продукти з моделі
+                  // Відображаємо кожен продукт через FoodRowItemWidget
                   ...meal.items.map(
                     (item) => FoodRowItemWidget(
                       name: item.name,
@@ -115,12 +126,14 @@ class MealCardWidget extends StatelessWidget {
                     ),
                   ),
 
-                // 4. Кнопка додавання нового продукту
+                const SizedBox(height: 12.0),
+
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 2.4]: КНОПКА ДОДАВАННЯ НОВОГО ПРОДУКТУ
+                // ------------------------------------------------------------
                 Center(
                   child: AddFoodButtonWidget(
-                    date: DateService()
-                        .selectedDate
-                        .value, // або currentDate (дата з важеля календаря чи параметрів картки)
+                    date: DateService().selectedDate.value, // Поточна вибрана дата
                     mealId: meal.id, // ID поточного прийому їжі
                     mealTitle: meal.title, // Назва прийому (напр. 'СНІДАНОК')
                   ),

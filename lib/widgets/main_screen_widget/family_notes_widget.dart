@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:my_diet/models/note_model.dart';
 import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/family_notes_full_screen_widget.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА СІМЕЙНИХ НОТАТОК (FamilyNotesWidget)
+// ----------------------------------------------------------------------------
 class FamilyNotesWidget extends StatefulWidget {
   const FamilyNotesWidget({super.key});
 
@@ -15,7 +18,13 @@ class FamilyNotesWidget extends StatefulWidget {
   State<FamilyNotesWidget> createState() => _FamilyNotesWidgetState();
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: СТАН ВІДЖЕТА (_FamilyNotesWidgetState)
+// ----------------------------------------------------------------------------
 class _FamilyNotesWidgetState extends State<FamilyNotesWidget> {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ДАНІ ТА СТАН НОТАТОК
+  // --------------------------------------------------------------------------
   // Тестовий список нотаток
   final List<FamilyNote> _notes = [
     FamilyNote(
@@ -41,6 +50,9 @@ class _FamilyNotesWidgetState extends State<FamilyNotesWidget> {
     return Colors.green.shade500; // Якщо є тільки зелені (низькі) — підсвічуємо зеленим
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.2]: ВІЗУАЛЬНИЙ КАРКАС ТА НАВІГАЦІЯ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -83,8 +95,15 @@ class _FamilyNotesWidgetState extends State<FamilyNotesWidget> {
         ),
         child: Row(
           children: [
+            // ----------------------------------------------------------------
+            // [ВУЗОЛ 2.2.1]: ІКОНКА ІНДИКАТОРА
+            // ----------------------------------------------------------------
             Icon(Icons.chat_bubble_outline, color: _notes.isEmpty ? Colors.blueGrey : _indicatorColor, size: 22),
             const SizedBox(width: 12),
+
+            // ----------------------------------------------------------------
+            // [ВУЗОЛ 2.2.2]: ТЕКСТОВИЙ БЛОК (ЗАГОЛОВОК ТА КІЛЬКІСТЬ)
+            // ----------------------------------------------------------------
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,6 +120,10 @@ class _FamilyNotesWidgetState extends State<FamilyNotesWidget> {
                 ],
               ),
             ),
+
+            // ----------------------------------------------------------------
+            // [ВУЗОЛ 2.2.3]: СТРІЛОЧКА ПЕРЕХОДУ
+            // ----------------------------------------------------------------
             const Icon(Icons.chevron_right, color: Colors.grey),
           ],
         ),

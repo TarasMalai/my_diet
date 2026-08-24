@@ -1,5 +1,6 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: daily_summary_widget.dart
+// ПРОЄКТ: Моя дієта
 // ПРИЗНАЧЕННЯ: Віджет блоку "Баланс за день" на головному екрані з розгортанням ФА
 // ============================================================================
 
@@ -12,6 +13,9 @@ import 'package:my_diet/widgets/main_screen_widget/daily_summary_widget/metric_c
 import 'package:my_diet/widgets/main_screen_widget/phe_expansion_tile_widget.dart';
 import 'package:my_diet/services/diet_settings_service.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ВІДЖЕТА СУМАРНОГО БАЛАНСУ (DailySummaryWidget)
+// ----------------------------------------------------------------------------
 class DailySummaryWidget extends StatefulWidget {
   final VoidCallback onTapDetails;
 
@@ -21,9 +25,18 @@ class DailySummaryWidget extends StatefulWidget {
   State<DailySummaryWidget> createState() => _DailySummaryWidgetState();
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: СТАН ВІДЖЕТА (_DailySummaryWidgetState)
+// ----------------------------------------------------------------------------
 class _DailySummaryWidgetState extends State<DailySummaryWidget> {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ЗМІННІ СТАНУ
+  // --------------------------------------------------------------------------
   bool _isExpanded = false;
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.2]: ВІЗУАЛЬНИЙ КАРКАС ТА ЛОГІКА (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<DateTime>(
@@ -43,6 +56,9 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
         double totalMet = 0;
         double totalLes = 0;
 
+        // --------------------------------------------------------------------
+        // [ВУЗОЛ 2.2.1]: ОБРАХУНОК СУМАРНИХ ПОКАЗНИКІВ
+        // --------------------------------------------------------------------
         for (var meal in meals) {
           totalPhe += meal.totalPhe;
           totalCalories += meal.totalCalories;
@@ -117,7 +133,9 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Шапка блоку "Баланс за день"
+              // --------------------------------------------------------------
+              // [ВУЗОЛ 2.2.2]: ШАПКА БЛОКУ "БАЛАНС ЗА ДЕНЬ"
+              // --------------------------------------------------------------
               Material(
                 color: Colors.blue.shade50.withValues(alpha: 0.4),
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
@@ -140,6 +158,9 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
                 ),
               ),
 
+              // --------------------------------------------------------------
+              // [ВУЗОЛ 2.2.3]: ОСНОВНИЙ ВМІСТ
+              // --------------------------------------------------------------
               Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
@@ -183,7 +204,9 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
 
                     const SizedBox(height: 4),
 
-                    // Кнопка показати всі / згорнути нутрієнти
+                    // --------------------------------------------------------
+                    // [ВУЗОЛ 2.2.4]: КНОПКА РОЗГОРТАННЯ / ЗГОРТАННЯ СПИСКУ
+                    // --------------------------------------------------------
                     TextButton.icon(
                       onPressed: () => setState(() => _isExpanded = !_isExpanded),
                       icon: Icon(_isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 18),

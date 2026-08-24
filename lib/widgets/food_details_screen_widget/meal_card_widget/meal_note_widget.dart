@@ -6,19 +6,25 @@
 
 import 'package:flutter/material.dart';
 
-/// [ВУЗОЛ 1]: ВІДЖЕТ НОТАТКИ ПРИЙОМУ ЇЖІ
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ ВІДЖЕТ НОТАТКИ ПРИЙОМУ ЇЖІ (MealNoteWidget)
+// ----------------------------------------------------------------------------
 class MealNoteWidget extends StatelessWidget {
   final String note;
   final VoidCallback onTap; // Дія при натисканні (відкриття діалогу вводу/редагування)
 
   const MealNoteWidget({super.key, required this.note, required this.onTap});
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.1]: ВІЗУАЛЬНИЙ КАРКАС ТА ДИНАМІЧНИЙ СТИЛЬ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     final bool hasNote = note.trim().isNotEmpty;
 
     return Column(
       children: [
+        // [ВУЗОЛ 1.1.1]: КЛІКАБЕЛЬНА ОБЛАСТЬ ТА ДИНАМІЧНИЙ КОНТЕЙНЕР
         InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(8.0),
@@ -33,12 +39,15 @@ class MealNoteWidget extends StatelessWidget {
             ),
             child: Row(
               children: [
+                // [ВУЗОЛ 1.1.2]: ІКОНКА СТАНУ НОТАТКИ
                 Icon(
                   hasNote ? Icons.edit_note_rounded : Icons.add_comment_outlined,
                   size: 18.0,
                   color: hasNote ? Colors.orange.shade800 : Colors.grey.shade600,
                 ),
                 const SizedBox(width: 8.0),
+
+                // [ВУЗОЛ 1.1.3]: ТЕКСТ НОТАТКИ АБО ПІДКАЗКА ПОРЕДАГУВАННЯ
                 Expanded(
                   child: Text(
                     hasNote ? '📝 $note' : 'Додати нотатку або коментар...',

@@ -10,6 +10,9 @@ import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/note_card
 import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/add_note_dialog_widget.dart';
 import 'package:my_diet/widgets/main_screen_widget/family_notes_widget/edit_note_dialog_widget.dart'; // <--- Імпортуємо наш новий віджет
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ГОЛОВНИЙ КЛАС ЕКРАНУ СІМЕЙНИХ НОТАТОК (FamilyNotesFullScreen)
+// ----------------------------------------------------------------------------
 class FamilyNotesFullScreen extends StatefulWidget {
   final List<FamilyNote> notes;
   final Function(FamilyNote) onNoteAdded;
@@ -28,10 +31,19 @@ class FamilyNotesFullScreen extends StatefulWidget {
   State<FamilyNotesFullScreen> createState() => _FamilyNotesFullScreenState();
 }
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: СТАН ЕКРАНУ СІМЕЙНИХ НОТАТОК (_FamilyNotesFullScreenState)
+// ----------------------------------------------------------------------------
 class _FamilyNotesFullScreenState extends State<FamilyNotesFullScreen> {
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ВІЗУАЛЬНИЙ КАРКАС ТА ІНТЕРФЕЙС (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // ----------------------------------------------------------------------
+      // [ВУЗОЛ 2.1.1]: APPBAR ТА КНОПКА ДОДАВАННЯ НОТАТКИ
+      // ----------------------------------------------------------------------
       appBar: AppBar(
         title: const Text('Сімейні нотатки та архів'),
         actions: [
@@ -53,6 +65,9 @@ class _FamilyNotesFullScreenState extends State<FamilyNotesFullScreen> {
           ),
         ],
       ),
+      // ----------------------------------------------------------------------
+      // [ВУЗОЛ 2.1.2]: ТІЛО ЕКРАНУ (СПИСОК АБО ПУСТИЙ СТАН)
+      // ----------------------------------------------------------------------
       body: widget.notes.isEmpty
           ? const Center(
               child: Text('Поки немає жодних нотаток', style: TextStyle(color: Colors.grey, fontSize: 16)),

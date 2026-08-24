@@ -9,7 +9,7 @@
 import 'package:flutter/material.dart';
 
 // ----------------------------------------------------------------------------
-// ВУЗОЛ 1: ІМПОРТИ ВІДЖЕТІВ (Поки що закоментовані, щоб не було помилок)
+// [ВУЗОЛ 1]: ІМПОРТИ ВІДЖЕТІВ (Закоментовані до моменту створення файлів)
 // ----------------------------------------------------------------------------
 // Згодом ми розкоментуємо їх, коли створимо відповідні файли у папці
 // lib/widgets/databases_and_resources/
@@ -18,14 +18,24 @@ import 'package:flutter/material.dart';
 // import '../widgets/databases_and_resources/products_base_widget.dart';
 // import '../widgets/databases_and_resources/useful_links_widget.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 2]: ГОЛОВНИЙ КЛАС ЕКРАНУ (DatabasesAndResourcesScreen)
+// ----------------------------------------------------------------------------
+/// Головний екран-хаб для доступу до баз даних, ресурсів та модулів готування.
+/// [ВУЗОЛ 2.0: StatelessWidget]
+/// Використовується, оскільки екран є статичним контейнером-провідником
+/// і показує готові модулі віджетів.
 class DatabasesAndResourcesScreen extends StatelessWidget {
   const DatabasesAndResourcesScreen({super.key});
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.1]: ВІЗУАЛЬНИЙ КАРКАС ЕКРАНУ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       // ----------------------------------------------------------------------
-      // ВУЗОЛ 2: ВЕРХНЯ ПАНЕЛЬ (AppBar)
+      // [ВУЗОЛ 2.1.1]: ВЕРХНЯ ПАНЕЛЬ (AppBar)
       // ----------------------------------------------------------------------
       appBar: AppBar(
         title: const Text('Бази та Ресурси', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -35,26 +45,32 @@ class DatabasesAndResourcesScreen extends StatelessWidget {
       ),
 
       // ----------------------------------------------------------------------
-      // ВУЗОЛ 3: ОСНОВНИЙ КОНТЕНТ (Body зі скролом)
+      // [ВУЗОЛ 2.1.2]: ОСНОВНИЙ КОНТЕНТ (Body зі скролом)
       // ----------------------------------------------------------------------
       body: SingleChildScrollView(
+        // [ВУЗОЛ 2.1.2.1: SingleChildScrollView]
+        // Гарантує прокрутку екрана, якщо контент не вміщується за висотою.
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // --- БЛОК 1: ОПЕРАТИВНІ ІНСТРУМЕНТИ ---
+              // --------------------------------------------------------------
+              // [ВУЗОЛ 2.1.2.2]: СЕКЦІЯ 1 - ОПЕРАТИВНІ ІНСТРУМЕНТИ
+              // --------------------------------------------------------------
               _buildSectionTitle('Управління та Склад', Icons.handyman),
               const SizedBox(height: 12),
               // Тут буде InventoryWidget()
-              _buildPlaceholderTile('Інвентар (Наявні продукти)', Colors.green),
+              _buildPlaceholderTile('Інвентар (Наявні продукты)', Colors.green),
               const SizedBox(height: 12),
               // Тут буде CookingWidget()
               _buildPlaceholderTile('Кухня (Готування страв)', Colors.orange),
 
               const SizedBox(height: 24),
 
-              // --- БЛОК 2: ДОВІДНИКИ ТА БАЗИ ---
+              // --------------------------------------------------------------
+              // [ВУЗОЛ 2.1.2.3]: СЕКЦІЯ 2 - ДОВІДНИКИ ТА БАЗИ ДАНИХ
+              // --------------------------------------------------------------
               _buildSectionTitle('Бази Даних', Icons.storage),
               const SizedBox(height: 12),
               // Тут буде ProductsBaseWidget()
@@ -65,13 +81,15 @@ class DatabasesAndResourcesScreen extends StatelessWidget {
 
               const SizedBox(height: 24),
 
-              // --- БЛОК 3: КОРИСНІ ПОСИЛАННЯ ---
+              // --------------------------------------------------------------
+              // [ВУЗОЛ 2.1.2.4]: СЕКЦІЯ 3 - КОРИСНІ РЕСУРСИ
+              // --------------------------------------------------------------
               _buildSectionTitle('Корисні ресурси', Icons.language),
               const SizedBox(height: 12),
               // Тут буде UsefulLinksWidget()
               _buildPlaceholderTile('YouTube канали та Інститути', Colors.redAccent),
 
-              const SizedBox(height: 40), // Відступ знизу
+              const SizedBox(height: 40), // Відступ знизу для зручного скролу
             ],
           ),
         ),
@@ -80,10 +98,11 @@ class DatabasesAndResourcesScreen extends StatelessWidget {
   }
 
   // --------------------------------------------------------------------------
-  // ВУЗОЛ 4: ДОПОМІЖНІ МЕТОДИ (Тимчасові заглушки для дизайну)
+  // [ВУЗОЛ 3]: ДОПОМІЖНІ МЕТОДИ ГЕНЕРАЦІЇ UI (Тимчасові заглушки)
   // --------------------------------------------------------------------------
 
-  /// Метод для генерації заголовків секцій
+  /// [ВУЗОЛ 3.1: _buildSectionTitle]
+  /// Метод для генерації уніфікованих заголовків секцій з іконкою.
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
@@ -97,7 +116,8 @@ class DatabasesAndResourcesScreen extends StatelessWidget {
     );
   }
 
-  /// Метод для генерації тимчасових карток-заглушок (доки ми не підключимо віджети)
+  /// [ВУЗОЛ 3.2: _buildPlaceholderTile]
+  /// Метод для генерації тимчасових карток-заглушок (доки не підключені фінальні віджети).
   Widget _buildPlaceholderTile(String title, Color color) {
     return Container(
       width: double.infinity,

@@ -1,5 +1,6 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: add_food_dialog_widget.dart
+// ПРОЄКТ: Моя дієта
 // ПРИЗНАЧЕННЯ: Спливаюче вікно вводу продукту з автоочищенням нулів при фокусі
 // ============================================================================
 
@@ -8,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:my_diet/models/food_item_model.dart';
 import 'package:my_diet/services/mock_diet_repository.dart';
 
+// ----------------------------------------------------------------------------
+// [ВУЗОЛ 1]: ДІАЛОГОВЕ ВІКНО ДОДАВАННЯ ПРОДУКТУ (AddFoodDialogWidget)
+// ----------------------------------------------------------------------------
 class AddFoodDialogWidget extends StatefulWidget {
   final DateTime date;
   final String mealId;
@@ -20,7 +24,9 @@ class AddFoodDialogWidget extends StatefulWidget {
 }
 
 class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
-  // ВУЗОЛ 1.1: Ключ форми та контролери текстових полів
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.1]: КЛЮЧ ФОРМИ ТА КОНТРОЛЕРИ ТЕКСТОВИХ ПОЛІВ
+  // --------------------------------------------------------------------------
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -31,7 +37,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
   final _carbsController = TextEditingController(text: '0');
   final _fatController = TextEditingController(text: '0');
 
-  // ВУЗОЛ 1.2: Фокус-ноди для управління очищенням нуля при натисканні
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.2]: ФОКУС-НОДИ ДЛЯ УПРАВЛІННЯ ОЧИЩЕННЯМ НУЛЯ ПРИ НАТИСКАННІ
+  // --------------------------------------------------------------------------
   final _weightFocus = FocusNode();
   final _pheFocus = FocusNode();
   final _caloriesFocus = FocusNode();
@@ -51,7 +59,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
     _setupFocusListener(_fatController, _fatFocus);
   }
 
-  // ВУЗОЛ 1.3: Метод для автоматичного стирання «0» при отриманні фокуса
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.3]: МЕТОД ДЛЯ АВТОМАТИЧНОГО СТИРАННЯ «0» ПРИ ОТРЕСУВАННІ ФОКУСА
+  // --------------------------------------------------------------------------
   void _setupFocusListener(TextEditingController controller, FocusNode focusNode) {
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
@@ -67,6 +77,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
     });
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.4]: ЗВІЛЬНЕННЯ РЕСУРСІВ (DISPOSE)
+  // --------------------------------------------------------------------------
   @override
   void dispose() {
     // Звільнення контролерів
@@ -89,7 +102,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
     super.dispose();
   }
 
-  // ВУЗОЛ 2.1: Обробник збереження даних
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2]: ОБРОБНИК ЗБЕРЕЖЕННЯ ТА РОЗРАХУНКУ ДАНИХ (_submit)
+  // --------------------------------------------------------------------------
   void _submit() {
     if (_formKey.currentState!.validate()) {
       final weight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 100.0;
@@ -115,6 +130,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
     }
   }
 
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 3]: ВІЗУАЛЬНИЙ КАРКАС ДІАЛОГУ ТА ФОРМА ВВОДУ (BUILD)
+  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -128,7 +146,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Поле назви продукту
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 3.1]: ПОЛЯ ВВЕДЕННЯ НАЗВИ ТА ВАГИ
+                // ------------------------------------------------------------
                 TextFormField(
                   controller: _nameController,
                   textInputAction: TextInputAction.next,
@@ -136,7 +156,6 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                   validator: (val) => val == null || val.trim().isEmpty ? 'Введіть назву' : null,
                 ),
                 const SizedBox(height: 12),
-                // Поле ваги
                 TextFormField(
                   controller: _weightController,
                   focusNode: _weightFocus,
@@ -145,6 +164,10 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                   textInputAction: TextInputAction.next,
                   decoration: const InputDecoration(labelText: 'Вага (грам)', hintText: '100'),
                 ),
+
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 3.2]: БЛОК ПОКАЗНИКІВ НА 100 ГРАМ (ФА та ККАЛ)
+                // ------------------------------------------------------------
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Text('Показники на 100 грам:', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -175,6 +198,10 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                   ],
                 ),
                 const SizedBox(height: 12),
+
+                // ------------------------------------------------------------
+                // [ВУЗОЛ 3.3]: БЛОК БЖВ (БІЛКИ, ВУГЛЕВОДИ, ЖИРИ)
+                // ------------------------------------------------------------
                 Row(
                   children: [
                     Expanded(
@@ -216,6 +243,9 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
           ),
         ),
       ),
+      // ----------------------------------------------------------------------
+      // [ВУЗОЛ 3.4]: КНОПКИ ДІЙ (СКАСУВАТИ / ЗБЕРЕГТИ)
+      // ----------------------------------------------------------------------
       actions: [
         TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Скасувати')),
         ElevatedButton(onPressed: _submit, child: const Text('Зберегти')),
