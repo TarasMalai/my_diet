@@ -11,7 +11,7 @@ import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/add_
 import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/meal_header_widget.dart';
 import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/meal_note_widget.dart';
 import 'package:my_diet/services/date_service.dart';
-import 'package:my_diet/services/mock_diet_repository.dart';
+import 'package:my_diet/services/mock_diet_repository_service.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1]: ДІАЛОГОВЕ ВІКНО РЕДАГУВАННЯ НОТАТКИ (_showEditNoteDialog)

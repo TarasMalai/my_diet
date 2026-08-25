@@ -14,6 +14,8 @@ class MetricCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isExceeded = item.isExceeded;
+    final bool hasTarget = item.hasTarget;
+    final double? target = item.target;
 
     // Акцентні кольори для стану перевищення та норми
     final Color statusColor = isExceeded ? Colors.red.shade600 : item.baseColor;
@@ -23,7 +25,11 @@ class MetricCardWidget extends StatelessWidget {
         : item.baseColor.withValues(alpha: 0.03);
 
     final String currentStr = item.current % 1 == 0 ? item.current.toInt().toString() : item.current.toStringAsFixed(1);
-    final String targetStr = item.target % 1 == 0 ? item.target.toInt().toString() : item.target.toStringAsFixed(1);
+
+    // Безпечна форматизація цільового значення при наявності target
+    final String targetStr = hasTarget && target != null
+        ? (target % 1 == 0 ? target.toInt().toString() : target.toStringAsFixed(1))
+        : '';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
@@ -56,16 +62,16 @@ class MetricCardWidget extends StatelessWidget {
                 ),
               ),
 
-              // Значення кількості (колір змінюється на червоний при перевищенні)
+              // Значення кількості (відображає ціль лише якщо вона вказана)
               Text(
-                item.target > 0 ? '$currentStr / $targetStr ${item.unit}' : '$currentStr ${item.unit}',
+                hasTarget ? '$currentStr / $targetStr ${item.unit}' : '$currentStr ${item.unit}',
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: statusColor),
               ),
             ],
           ),
 
-          // Смужка прогресу
-          if (item.target > 0) ...[
+          // Смужка прогресу відображається тільки якщо є встановлений ліміт
+          if (hasTarget) ...[
             const SizedBox(height: 10),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),

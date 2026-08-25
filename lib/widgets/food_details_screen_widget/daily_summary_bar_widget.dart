@@ -1,13 +1,14 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: daily_summary_bar_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Збільшена панель нутрієнтів з вертикальними амінокислотами (4 плитки)
+// ПРИЗНАЧЕННЯ: Панель нутрієнтів з амінокислотами та каруселлю на 4 плитки
 // ============================================================================
 
 import 'package:flutter/material.dart';
 
 import 'package:my_diet/services/date_service.dart';
-import 'package:my_diet/services/mock_diet_repository.dart';
+import 'package:my_diet/services/diet_settings_service.dart';
+import 'package:my_diet/services/mock_diet_repository_service.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1]: МОДЕЛЬ ДАНИХ ЕЛЕМЕНТА НУТРІЄНТА (NutrientItem)
@@ -15,24 +16,24 @@ import 'package:my_diet/services/mock_diet_repository.dart';
 class NutrientItem {
   final String label;
   final double current;
-  final double target;
+  final double? target;
   final String unit;
   final Color baseColor;
   final IconData icon;
-  final Map<String, int>? aminoMap; // Карта амінокислот для стовпчика/сітки
+  final Map<String, double>? aminoMap; // Карта амінокислот для плитки ФА
 
   NutrientItem({
     required this.label,
     required this.current,
-    required this.target,
+    this.target,
     required this.unit,
     required this.baseColor,
     required this.icon,
     this.aminoMap,
   });
 
-  bool get isExceeded => target > 0 && current > target;
-  double get progress => target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
+  bool get isExceeded => target != null && target! > 0 && current > target!;
+  double get progress => (target != null && target! > 0) ? (current / target!).clamp(0.0, 1.0) : 0.0;
 }
 
 // ----------------------------------------------------------------------------
@@ -67,6 +68,8 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    final settings = DietSettingsService();
+
     return ValueListenableBuilder<int>(
       valueListenable: MockDietRepository().listenable,
       builder: (context, _, child) {
@@ -75,72 +78,139 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
           builder: (context, currentDate, child) {
             final meals = MockDietRepository().getMealsForDate(currentDate);
 
+            // [ОСНОВНІ НУТРІЄНТИ]
             double totalPhe = 0;
             double totalCalories = 0;
             double totalProtein = 0;
             double totalCarbs = 0;
             double totalFat = 0;
 
+            // [АМІНОКИСЛОТИ]
+            double totalLeu = 0;
+            double totalTyr = 0;
+            double totalMet = 0;
+            double totalLys = 0;
+
+            // [ДОДАТКОВІ НУТРІЄНТИ]
+            double totalFiber = 0;
+            double totalSugar = 0;
+            double totalSalt = 0;
+            double totalWater = 0;
+            double totalEnergy = 0;
+
+            // Динамічний підрахунок усіх показників з страв та продуктів
             for (var meal in meals) {
               totalPhe += meal.totalPhe;
               totalCalories += meal.totalCalories;
               totalProtein += meal.totalProtein;
               totalCarbs += meal.totalCarbs;
               totalFat += meal.totalFat;
+
+              for (var item in meal.items) {
+                totalLeu += item.leucine;
+                totalTyr += item.tyrosine;
+                totalMet += item.methionine;
+                totalLys += item.lysine;
+
+                totalFiber += item.fiber;
+                totalSugar += item.sugar;
+                totalSalt += item.salt;
+                totalWater += item.water;
+                totalEnergy += item.energy;
+              }
             }
 
-            // ----------------------------------------------------------------
-            // [УВАГА — МІСЦЕ ПОТЕНЦІЙНОГО ЗБИТУ ЛОГІКИ]:
-            // Розрахункові значення амінокислот автоматично множаться на totalPhe!
-            // Користувач зауважував, що при введенні вигаданого ФА тут автоматично
-            // перераховуються амінокислоти, і вони ніде не задіяні окремо.
-            // ----------------------------------------------------------------
-            final int leu = 0;
-            final int tyr = 0;
-            final int met = 0;
-            final int les = 0;
-
             final List<NutrientItem> items = [
+              // 1. Фенілаланін + амінокислоти
               NutrientItem(
                 label: 'Фенілаланін',
                 current: totalPhe,
-                target: 300,
+                target: settings.targetPhe,
                 unit: 'ФА',
                 baseColor: Colors.purple,
                 icon: Icons.science,
-                aminoMap: {'Leu': leu, 'Tyr': tyr, 'Met': met, 'Les': les},
+                aminoMap: {'Leu': totalLeu, 'Tyr': totalTyr, 'Met': totalMet, 'Les': totalLys},
               ),
+              // 2. Калорії
               NutrientItem(
                 label: 'Калорії',
                 current: totalCalories,
-                target: 2000,
+                target: settings.targetCalories,
                 unit: 'ккал',
                 baseColor: Colors.orange,
                 icon: Icons.local_fire_department,
               ),
+              // 3. Білки
               NutrientItem(
                 label: 'Білки',
                 current: totalProtein,
-                target: 50,
+                target: settings.targetProtein,
                 unit: 'г',
                 baseColor: Colors.blue,
                 icon: Icons.fitness_center,
               ),
+              // 4. Вуглеводи
               NutrientItem(
                 label: 'Вуглеводи',
                 current: totalCarbs,
-                target: 250,
+                target: settings.targetCarbs,
                 unit: 'г',
                 baseColor: Colors.amber,
                 icon: Icons.grain,
               ),
+              // 5. Жири
               NutrientItem(
                 label: 'Жири',
                 current: totalFat,
-                target: 70,
+                target: settings.targetFat,
                 unit: 'г',
                 baseColor: Colors.redAccent,
                 icon: Icons.opacity,
+              ),
+              // 6. Клітковина
+              NutrientItem(
+                label: 'Клітковина',
+                current: totalFiber,
+                target: settings.targetFiber,
+                unit: 'г',
+                baseColor: Colors.green,
+                icon: Icons.grass,
+              ),
+              // 7. Цукор
+              NutrientItem(
+                label: 'Цукор',
+                current: totalSugar,
+                target: settings.targetSugar,
+                unit: 'г',
+                baseColor: Colors.pink,
+                icon: Icons.cookie_outlined,
+              ),
+              // 8. Сіль
+              NutrientItem(
+                label: 'Сіль',
+                current: totalSalt,
+                target: settings.targetSalt,
+                unit: 'г',
+                baseColor: Colors.grey,
+                icon: Icons.grain,
+              ),
+              // 9. Вода
+              NutrientItem(
+                label: 'Вода',
+                current: totalWater,
+                target: settings.targetWater,
+                unit: 'мл',
+                baseColor: Colors.lightBlue,
+                icon: Icons.water_drop_outlined,
+              ),
+              // 10. Енергія
+              NutrientItem(
+                label: 'Енергія',
+                current: totalEnergy,
+                target: settings.targetEnergy,
+                unit: 'кДж',
+                baseColor: Colors.deepOrange,
+                icon: Icons.bolt,
               ),
             ];
 
@@ -148,7 +218,7 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
               padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
               color: Colors.white,
               child: SizedBox(
-                height: 108, // Збільшена висота панелі для 4 високих плиток
+                height: 108,
                 child: Row(
                   children: [
                     IconButton(
@@ -160,7 +230,7 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          const int visibleCount = 4; // Рівно 4 плиточки
+                          const int visibleCount = 4;
 
                           List<Widget> visibleCards = [];
                           for (int i = 0; i < visibleCount; i++) {
@@ -202,6 +272,7 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
   // --------------------------------------------------------------------------
   Widget _buildNutrientTile(NutrientItem item) {
     final bool isExceeded = item.isExceeded;
+    final bool hasTarget = item.target != null && item.target! > 0;
 
     final Color statusColor = isExceeded ? Colors.red.shade600 : item.baseColor;
     final Color borderColor = isExceeded ? Colors.red.shade300 : item.baseColor.withValues(alpha: 0.3);
@@ -210,7 +281,9 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
         : item.baseColor.withValues(alpha: 0.03);
 
     final String currentStr = item.current % 1 == 0 ? item.current.toInt().toString() : item.current.toStringAsFixed(1);
-    final String targetStr = item.target % 1 == 0 ? item.target.toInt().toString() : item.target.toStringAsFixed(1);
+    final String targetStr = hasTarget
+        ? (item.target! % 1 == 0 ? item.target!.toInt().toString() : item.target!.toStringAsFixed(1))
+        : '';
 
     return Container(
       padding: const EdgeInsets.all(8.0),
@@ -239,7 +312,7 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
             ],
           ),
 
-          // [ВУЗОЛ 2.2.1]: АМІНОКИСЛОТИ ВНУТРІ ПЛИТКИ ФА
+          // Амінокислоти всередині плитки ФА
           if (item.aminoMap != null)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -279,9 +352,14 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
                     text: currentStr,
                     style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: statusColor),
                   ),
-                  if (item.target > 0)
+                  if (hasTarget)
                     TextSpan(
                       text: ' / $targetStr ${item.unit}',
+                      style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                    )
+                  else
+                    TextSpan(
+                      text: ' ${item.unit}',
                       style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
                     ),
                 ],
@@ -289,24 +367,28 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
             ),
           ),
 
-          // Прогрес-бар
-          ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: item.progress,
-              backgroundColor: isExceeded ? Colors.red.shade100 : item.baseColor.withValues(alpha: 0.15),
-              valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-              minHeight: 4,
-            ),
-          ),
+          // Прогрес-бар (відображаємо тільки якщо встановлено ціль)
+          if (hasTarget)
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: item.progress,
+                backgroundColor: isExceeded ? Colors.red.shade100 : item.baseColor.withValues(alpha: 0.15),
+                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                minHeight: 4,
+              ),
+            )
+          else
+            const SizedBox(height: 4),
         ],
       ),
     );
   }
 
-  Widget _buildAminoLabel(String name, int val) {
+  Widget _buildAminoLabel(String name, double val) {
+    final String valStr = val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
     return Text(
-      '$name: $val',
+      '$name: $valStr',
       style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Colors.purple.shade800),
     );
   }

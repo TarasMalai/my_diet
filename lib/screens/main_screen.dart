@@ -12,7 +12,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/services/navigation_service.dart';
 import 'package:my_diet/services/date_service.dart'; // Глобальний сервіс управління датою
-import 'package:my_diet/services/mock_diet_repository.dart';
+import 'package:my_diet/services/mock_diet_repository_service.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1.1]: ІМПОРТИ МОДУЛЬНИХ ВІДЖЕТІВ

@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 // [ВУЗОЛ 1]: ІМПОРТИ СЕРВІСІВ ТА РЕПОЗИТОРІЇВ
 // ----------------------------------------------------------------------------
 import 'package:my_diet/services/date_service.dart';
-import 'package:my_diet/services/mock_diet_repository.dart';
+import 'package:my_diet/services/mock_diet_repository_service.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1.1]: ІМПОРТИ МОДЕЛЕЙ

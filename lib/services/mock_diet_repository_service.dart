@@ -1,5 +1,5 @@
 // ============================================================================
-// НАЗВА ФАЙЛУ: mock_diet_repository.dart
+// НАЗВА ФАЙЛУ: mock_diet_repository_service.dart
 // ПРОЄКТ: Моя дієта
 // ПРИЗНАЧЕННЯ: Репозиторій даних з підтримкою додавання, видалення, редагування та сортування прийомів їжі
 // ============================================================================
@@ -150,5 +150,61 @@ class MockDietRepository {
   /// Сповістити слухачів про зміну даних
   void _notifyListeners() {
     _changeNotifier.value = DateTime.now().millisecondsSinceEpoch;
+  }
+
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 5]: ДЕННІ ПІДСУМКИ НУТРІЄНТІВ ТА АМІНОКИСЛОТ [ДОДАНО 25.08.2026]
+  // --------------------------------------------------------------------------
+  /// Розрахувати загальні підсумки всіх нутрієнтів за обрану дату
+  Map<String, double> getDailyTotalsForDate(DateTime date) {
+    final meals = getMealsForDate(date);
+    double phe = 0.0;
+    double calories = 0.0;
+    double protein = 0.0;
+    double carbs = 0.0;
+    double fat = 0.0;
+    double leucine = 0.0;
+    double tyrosine = 0.0;
+    double methionine = 0.0;
+    double lysine = 0.0;
+    double fiber = 0.0;
+    double salt = 0.0;
+    double sugar = 0.0;
+    double water = 0.0;
+    double energy = 0.0;
+
+    for (final meal in meals) {
+      phe += meal.totalPhe;
+      calories += meal.totalCalories;
+      protein += meal.totalProtein;
+      carbs += meal.totalCarbs;
+      fat += meal.totalFat;
+      leucine += meal.totalLeucine;
+      tyrosine += meal.totalTyrosine;
+      methionine += meal.totalMethionine;
+      lysine += meal.totalLysine;
+      fiber += meal.totalFiber;
+      salt += meal.totalSalt;
+      sugar += meal.totalSugar;
+      water += meal.totalWater;
+      energy += meal.totalEnergy;
+    }
+
+    return {
+      'phe': phe,
+      'calories': calories,
+      'protein': protein,
+      'carbs': carbs,
+      'fat': fat,
+      'leucine': leucine,
+      'tyrosine': tyrosine,
+      'methionine': methionine,
+      'lysine': lysine,
+      'fiber': fiber,
+      'salt': salt,
+      'sugar': sugar,
+      'water': water,
+      'energy': energy,
+    };
   }
 }

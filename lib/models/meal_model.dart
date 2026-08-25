@@ -33,6 +33,19 @@ class MealModel {
   double get totalCarbs => items.fold(0.0, (sum, item) => sum + item.carbs);
   double get totalFat => items.fold(0.0, (sum, item) => sum + item.fat);
 
+  // [ДОДАНО]: Геттери підрахунку амінокислот
+  double get totalLeucine => items.fold(0.0, (sum, item) => sum + item.leucine);
+  double get totalTyrosine => items.fold(0.0, (sum, item) => sum + item.tyrosine);
+  double get totalMethionine => items.fold(0.0, (sum, item) => sum + item.methionine);
+  double get totalLysine => items.fold(0.0, (sum, item) => sum + item.lysine);
+
+  // [ДОДАНО]: Геттери підрахунку додаткових нутрієнтів
+  double get totalFiber => items.fold(0.0, (sum, item) => sum + item.fiber);
+  double get totalSalt => items.fold(0.0, (sum, item) => sum + item.salt);
+  double get totalSugar => items.fold(0.0, (sum, item) => sum + item.sugar);
+  double get totalWater => items.fold(0.0, (sum, item) => sum + item.water);
+  double get totalEnergy => items.fold(0.0, (sum, item) => sum + item.energy);
+
   // --------------------------------------------------------------------------
   // [ВУЗОЛ 1.4]: КОПІЮВАННЯ ОБ'ЄКТА З ЗМІНАМИ (copyWith)
   // --------------------------------------------------------------------------

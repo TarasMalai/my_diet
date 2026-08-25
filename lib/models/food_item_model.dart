@@ -21,6 +21,19 @@ class FoodItemModel {
   final double carbs;
   final double fat;
 
+  // [ДОДАНО]: Розширені амінокислоти
+  final double leucine; // Лейцин (Leu)
+  final double tyrosine; // Тирозин (Tyr)
+  final double methionine; // Метіонін (Met)
+  final double lysine; // Лізин (Lys)
+
+  // [ДОДАНО]: Додаткові нутрієнти
+  final double fiber; // Волокна / Клітковина
+  final double salt; // Сіль
+  final double sugar; // Цукор
+  final double water; // Вода
+  final double energy; // Енергія (кДж або розширена енергетична цінність)
+
   // --------------------------------------------------------------------------
   // [ВУЗОЛ 1.2]: ГОЛОВНИЙ КОНСТРУКТОР
   // --------------------------------------------------------------------------
@@ -34,6 +47,16 @@ class FoodItemModel {
     required this.protein,
     required this.carbs,
     required this.fat,
+    // [ДОДАНО]: Поля за замовчуванням для нових нутрієнтів та амінокислот
+    this.leucine = 0.0,
+    this.tyrosine = 0.0,
+    this.methionine = 0.0,
+    this.lysine = 0.0,
+    this.fiber = 0.0,
+    this.salt = 0.0,
+    this.sugar = 0.0,
+    this.water = 0.0,
+    this.energy = 0.0,
   });
 
   // --------------------------------------------------------------------------
@@ -50,6 +73,16 @@ class FoodItemModel {
       protein: (json['protein'] as num?)?.toDouble() ?? 0.0,
       carbs: (json['carbs'] as num?)?.toDouble() ?? 0.0,
       fat: (json['fat'] as num?)?.toDouble() ?? 0.0,
+      // [ДОДАНО]: Зчитування нових амінокислот та нутрієнтів з JSON
+      leucine: (json['leucine'] as num?)?.toDouble() ?? 0.0,
+      tyrosine: (json['tyrosine'] as num?)?.toDouble() ?? 0.0,
+      methionine: (json['methionine'] as num?)?.toDouble() ?? 0.0,
+      lysine: (json['lysine'] as num?)?.toDouble() ?? 0.0,
+      fiber: (json['fiber'] as num?)?.toDouble() ?? 0.0,
+      salt: (json['salt'] as num?)?.toDouble() ?? 0.0,
+      sugar: (json['sugar'] as num?)?.toDouble() ?? 0.0,
+      water: (json['water'] as num?)?.toDouble() ?? 0.0,
+      energy: (json['energy'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -67,6 +100,16 @@ class FoodItemModel {
       'protein': protein,
       'carbs': carbs,
       'fat': fat,
+      // [ДОДАНО]: Серіалізація нових полів в JSON
+      'leucine': leucine,
+      'tyrosine': tyrosine,
+      'methionine': methionine,
+      'lysine': lysine,
+      'fiber': fiber,
+      'salt': salt,
+      'sugar': sugar,
+      'water': water,
+      'energy': energy,
     };
   }
 
@@ -83,6 +126,16 @@ class FoodItemModel {
     double? protein,
     double? carbs,
     double? fat,
+    // [ДОДАНО]: Нові параметри в copyWith
+    double? leucine,
+    double? tyrosine,
+    double? methionine,
+    double? lysine,
+    double? fiber,
+    double? salt,
+    double? sugar,
+    double? water,
+    double? energy,
   }) {
     return FoodItemModel(
       id: id ?? this.id,
@@ -94,6 +147,16 @@ class FoodItemModel {
       protein: protein ?? this.protein,
       carbs: carbs ?? this.carbs,
       fat: fat ?? this.fat,
+      // [ДОДАНО]: Призначення оновлених полів
+      leucine: leucine ?? this.leucine,
+      tyrosine: tyrosine ?? this.tyrosine,
+      methionine: methionine ?? this.methionine,
+      lysine: lysine ?? this.lysine,
+      fiber: fiber ?? this.fiber,
+      salt: salt ?? this.salt,
+      sugar: sugar ?? this.sugar,
+      water: water ?? this.water,
+      energy: energy ?? this.energy,
     );
   }
 }
