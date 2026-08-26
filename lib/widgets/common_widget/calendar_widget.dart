@@ -1,8 +1,9 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: calendar_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Спільний візуальний віджет календаря з перемикачем днів
-//              та викликом нашого кастомного діалогу вибору дати.
+// ПРИЗНАЧЕННЯ: Спільний візуальний віджет календаря з перемикачем днів,
+//              кольоровою рамкою статусу (збігається з date_picker_dialog_widget.dart)
+//              та викликом кастомного діалогу вибору дати.
 // ============================================================================
 
 // ----------------------------------------------------------------------------
@@ -12,16 +13,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // Потрібно для форматування дати та місяця
 
 // [ВУЗОЛ 1.1: Кастомний діалог вибору дати]
-// Імпортуємо наш діалог із вкладеної папки calendar_widget/
 import 'package:my_diet/widgets/common_widget/calendar_widget/date_picker_dialog_widget.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 2]: ГОЛОВНИЙ КЛАС ВІДЖЕТА (CalendarWidget)
 // ----------------------------------------------------------------------------
 /// Віджет календаря з кнопками "Назад/Вперед" та клікабельним центром.
-/// [ВУЗОЛ 2.0: StatelessWidget]
-/// Віджет є безстатусним, оскільки повністю керується зовнішнім станом (selectedDate),
-/// який передається з батьківського екрана або DateService.
 class CalendarWidget extends StatelessWidget {
   /// Поточна обрана дата у форматі DateTime
   final DateTime selectedDate;
@@ -37,18 +34,24 @@ class CalendarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // ------------------------------------------------------------------------
-    // [ВУЗОЛ 2.1.1]: ФОРМАТУВАННЯ ДАТИ (Називний відмінок для днів тижня)
+    // [ВУЗОЛ 2.1.1]: ФОРМАТУВАННЯ ДАТИ ТА ПЕРЕВІРКА СТАТУСУ СЬОГОДНІ
     // ------------------------------------------------------------------------
-    // Список днів тижня українською для коректного відображення в називному відмінку
     final List<String> days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П’ятниця', 'Субота', 'Неділя'];
 
-    // Отримуємо назву дня (називний відмінок) та день з місяцем
     final String dayName = days[selectedDate.weekday - 1];
     final String dateAndMonth = DateFormat('d MMMM', 'uk_UA').format(selectedDate);
 
-    // Формуємо фінальні текстові рядки для відображення
     final String topRowText = '$dayName, $dateAndMonth';
     final String bottomRowText = DateFormat('yyyy', 'uk_UA').format(selectedDate);
+
+    // [ВУЗОЛ 2.1.1.1: Перевірка збігу з поточною датою через DateUtils]
+    final DateTime today = DateTime.now();
+    final bool isSameAsToday = DateUtils.isSameDay(selectedDate, today);
+
+    // [ВУЗОЛ 2.1.1.2: Точна кольорова палітра з date_picker_dialog_widget.dart]
+    final Color bgColor = isSameAsToday ? Colors.teal.shade50 : Colors.amber.shade50;
+    final Color borderColor = isSameAsToday ? Colors.teal.shade300 : Colors.amber.shade300;
+    final Color textColor = isSameAsToday ? Colors.teal.shade800 : Colors.amber.shade900;
 
     // ------------------------------------------------------------------------
     // [ВУЗОЛ 2.1.2]: ВІЗУАЛЬНИЙ КАРКАС ВІДЖЕТА (Card)
@@ -68,7 +71,6 @@ class CalendarWidget extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.teal, size: 22),
               onPressed: () {
-                // Віднімаємо 1 день від поточної дати
                 final previousDay = selectedDate.subtract(const Duration(days: 1));
                 onDateSelected(previousDay);
               },
@@ -76,46 +78,50 @@ class CalendarWidget extends StatelessWidget {
             ),
 
             // ----------------------------------------------------------------
-            // [ВУЗОЛ 2.1.2.2]: ЦЕНТРАЛЬНИЙ ДВОРЯДКОВИЙ БЛОК ДАТИ (Клікабельний)
+            // [ВУЗОЛ 2.1.2.2]: ЦЕНТРАЛЬНИЙ БЛОК ДАТИ З ТОЧНИМ СТИЛЕМ ДІАЛОГУ
             // ----------------------------------------------------------------
             Expanded(
               child: Center(
-                child: InkWell(
-                  // [ВУЗОЛ 2.1.2.2.1: Виклик кастомного DatePicker]
-                  // Асинхронний виклик діалогового вікна вибору дати
-                  onTap: () async {
-                    final DateTime? pickedDate = await showCustomAppDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                    );
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(10.0),
+                    border: Border.all(color: borderColor, width: 1.2),
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      final DateTime? pickedDate = await showCustomAppDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                      );
 
-                    // Якщо користувач підтвердив вибір дати (натиснув "ОК")
-                    if (pickedDate != null) {
-                      onDateSelected(pickedDate);
-                    }
-                  },
-                  borderRadius: BorderRadius.circular(8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // [ВУЗОЛ 2.1.2.2.2: Верхній рядок - день і місяць]
-                        Text(
-                          topRowText,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 2),
+                      if (pickedDate != null) {
+                        onDateSelected(pickedDate);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // [ВУЗОЛ 2.1.2.2.1: День і місяць]
+                          Text(
+                            topRowText,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textColor),
+                          ),
+                          const SizedBox(height: 2),
 
-                        // [ВУЗОЛ 2.1.2.2.3: Нижній рядок - рік]
-                        Text(
-                          bottomRowText,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                        ),
-                      ],
+                          // [ВУЗОЛ 2.1.2.2.2: Рік]
+                          Text(
+                            bottomRowText,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -128,7 +134,6 @@ class CalendarWidget extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.arrow_forward_ios_rounded, color: Colors.teal, size: 22),
               onPressed: () {
-                // Додаємо 1 день до поточної дати
                 final nextDay = selectedDate.add(const Duration(days: 1));
                 onDateSelected(nextDay);
               },

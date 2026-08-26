@@ -100,82 +100,95 @@
 - **Синхронізація візуального відображення прогрес-барів**: Додано перевірку `if (hasTarget)` для смужки `LinearProgressIndicator` у каруселі підсумків `daily_summary_bar_widget.dart`. Тепер полоска заповнення ховається за відсутності встановленого ліміту (цілі), повністю відтворюючи візуальну поведінку блоків зведеного балансу з головного екрана.
 - **Планування декомпозиції віджета**: Сформовано план безпечного розділення монолітного файлу `daily_summary_bar_widget.dart` на окремі логічні файли (модель, плитка та карусель) без ризику порушення цілісності проєкту.
 
+## 17. Модульна декомпозиція бази продуктів, гнучке зчитування амінокислот та розумний пошук (26.08.2026)
+- **Гнучка десеріалізація амінокислот (`ProductModel`)**: Додано універсальний парсер ключів `parseNum`, який автоматично розпізнає та підтягує скорочені англійські (`tyr`, `leu`, `met`, `lys`, `kcal`) та українські назви показників із JSON-бази. Це розв'язало проблему відображення нульових значень амінокислот при розгортанні картки продукту.
+- **Модульна декомпозиція бази продуктів**: Проведено рефакторинг монолітного `products_base_widget.dart` із винесенням компонентів у підпапку `lib/widgets/databases_and_resources_widget/products_base_widget/`. Створено окремі ізольовані віджети: `product_search_bar_widget.dart` (пошуковий рядок) та `product_card_widget.dart` (картка продукту).
+- **Повнотекстові назви основних нутрієнтів та адаптивність**: Замінено скорочені позначення (Б, Ж, В, ФА) у картці на повні українські найменування (Калорії, Фенілаланін, Білки, Жири, Вуглеводи). Завдяки використанню віджета `Wrap`, плашки нутрієнтів гармонійно адаптуються під екрани смартфонів та ПК без обрізання тексту.
+- **Алгоритм розумного сортування за релевантністю**: Впроваджено багаторівневе сортування результатів пошуку. Першими у списку виводяться точні збіги назви продукту, далі — продукти, назва яких починається із шуканого слова (наприклад, «Яблуко...»), після чого застосовується стандартне алфавітне сортування.
+
 ### Правила іменування файлів та структури тека-віджет:
 1. **Принцип материнської теки:** Якщо віджет (наприклад, `main_app_bar_widget.dart`) розбивається на менші підкомпоненти, для нього створюється тека з аналогічною назвою без розширення (`main_app_bar_widget/`), куди складаються вкладені елементи (`app_drawer_widget.dart`).
 2. **Суфікси у папці `widgets/`:** Усі файли всередині каталогу `widgets/` обов'язково мають закінчуватися на `_widget.dart`.
 3. **Чистота моделей:** Чисті класи даних та моделей (наприклад, `NoteModel`), що виноситимуться у глобальне використання, зберігаються у папці `lib/models/` із суфіксом `_model.dart`.
 
-## Дерево проекту на 25.08.2026
 lib/
-├── models/                                            # Моделі даних
-│   ├── food_item_model.dart                           # Модель елемента продукту
-│   ├── meal_model.dart                                # Модель прийому їжі
-│   ├── note_model.dart                                # Модель даних нотатки
-│   └── nutrient_config_model.dart                     # Модель конфігурації нутрієнтів
+├── models/                                                 # Моделі даних
+│   ├── food_item_model.dart                                # Модель елемента продукту
+│   ├── meal_model.dart                                     # Модель прийому їжі
+│   ├── note_model.dart                                     # Модель даних нотатки
+│   ├── nutrient_config_model.dart                          # Модель конфігурації нутрієнтів
+│   ├── product_model.dart                                  # Модель продукту з повним набором нутрієнтів та амінокислот
+│   └── summary_nutrient_item_model.dart                    # Модель плитки підсумкового нутрієнта
 │
-├── screens/                                           # Екрани додатка
-│   ├── databases_and_resources_screen.dart            # Екран баз даних та ресурсів
-│   ├── food_details_screen.dart                       # Екран деталей харчування
-│   ├── main_screen.dart                               # Головний екран
-│   └── splash_screen.dart                             # Екран заставки
+├── screens/                                                # Екрани додатка
+│   ├── databases_and_resources_screen.dart                 # Екран баз даних та ресурсів
+│   ├── food_details_screen.dart                            # Екран деталей харчування
+│   ├── main_screen.dart                                    # Головний екран
+│   └── splash_screen.dart                                  # Екран заставки
 │
-├── services/                                          # Сервіси управління даними
-│   ├── date_service.dart                              # Глобальний сервіс дати (Singleton)
-│   ├── diet_settings_service.dart                     # Сервіс управління цільовими нормами нутрієнтів
-│   ├── diet_state_service.dart                        # Сервіс стану нутрієнтів
-│   ├── food_repository_service.dart                   # Модель даних продукту харчування з підтримкою категорій та виробника
-│   ├── mock_diet_repository_service.dart              # Репозиторій даних (Mock)
-│   ├── navigation_service.dart                        # Сервіс навігації
-│   └── nutrient_config_service.dart                   # Сервіс завантаження конфігурації
+├── services/                                               # Сервіси управління даними
+│   ├── date_service.dart                                   # Глобальний сервіс дати (Singleton)
+│   ├── diet_settings_service.dart                          # Сервіс управління цільовими нормами нутрієнтів
+│   ├── diet_state_service.dart                             # Сервіс стану нутрієнтів
+│   ├── food_repository_service.dart                        # Модель даних продукту харчування з підтримкою категорій та виробника
+│   ├── mock_diet_repository_service.dart                   # Репозиторій даних (Mock)
+│   ├── navigation_service.dart                             # Сервіс навігації
+│   ├── nutrient_config_service.dart                        # Сервіс завантаження конфігурації
+│   └── summary_nutrient_factory.dart                       # Фабрика підрахунку та формування підсумкових нутрієнтів
 │
-├── widgets/                                           # Модульні віджети
-│   ├── common_widget/                                 # Спільні віджети
-│   │   ├── calendar_widget/                           # Вкладені елементи календаря
-│   │   │   └── date_picker_dialog_widget.dart         # Кастомний діалог вибору дати
-│   │   └── calendar_widget.dart                       # Спільний віджет календаря
+├── widgets/                                                # Модульні віджети
+│   ├── common_widget/                                      # Спільні віджети
+│   │   ├── calendar_widget/                                # Вкладені елементи календаря
+│   │   │   └── date_picker_dialog_widget.dart              # Кастомний діалог вибору дати
+│   │   └── calendar_widget.dart                            # Спільний віджет календаря
 │   │
-│   ├── databases_and_resources_widget/                # Віджети екрана баз даних
-│   │   ├── cooking_widget.dart                        # Процес приготування
-│   │   ├── inventory_widget.dart                      # Наявні продукти (холодильник)
-│   │   ├── products_base_widget.dart                  # База продуктів
-│   │   ├── recipes_base_widget.dart                   # База рецептів
-│   │   └── useful_links_widget.dart                   # Корисні посилання
+│   ├── databases_and_resources_widget/                     # Віджети екрана баз даних
+│   │   ├── products_base_widget/                           # Вкладені елементи бази продуктів
+│   │   │   ├── product_card_widget.dart                    # Картка продукту з розгортанням нутрієнтів
+│   │   │   └── product_search_bar_widget.dart              # Віджет пошукового рядка
+│   │   ├── cooking_widget.dart                             # Процес приготування
+│   │   ├── inventory_widget.dart                           # Наявні продукти (холодильник)
+│   │   ├── products_base_widget.dart                       # Головний віджет бази продуктів
+│   │   ├── recipes_base_widget.dart                        # База рецептів
+│   │   └── useful_links_widget.dart                        # Корисні посилання
 │   │
-│   ├── food_details_screen_widget/                    # Віджети екрана деталей харчування
-│   │   ├── meal_card_widget/                          # Вкладені елементи картки прийому їжі
-│   │   │   ├── add_food_button_widget/                # Вкладені елементи картки прийому їжі
-│   │   │   │   └── add_food_dialog_widget.dart        # Діалог додавання продукту
-│   │   │   ├── add_food_button_widget.dart            # Кнопка додавання продукту
-│   │   │   ├── meal_header_widget.dart                # Заголовок прийому їжі
-│   │   │   └── meal_note_widget.dart                  # Примітка до прийому їжі
-│   │   ├── daily_summary_bar_widget.dart              # Слайдер плиток нутрієнтів
-│   │   ├── food_details_app_bar_widget.dart           # Верхня панель деталей
-│   │   ├── food_row_item_widget.dart                  # Рядок продукту
-│   │   └── meal_card_widget.dart                      # Картка прийому їжі
+│   ├── food_details_screen_widget/                         # Віджети екрана деталей харчування
+│   │   ├── daily_summary_bar_widget/                       # Вкладені елементи слайдера нутрієнтів
+│   │   │   └── summary_nutrient_tile_widget.dart           # Плитка окремого нутрієнта слайдера підсумків
+│   │   ├── meal_card_widget/                               # Вкладені елементи картки прийому їжі
+│   │   │   ├── add_food_button_widget/                     # Вкладені елементи картки прийому їжі
+│   │   │   │   └── add_food_dialog_widget.dart             # Діалог додавання продукту
+│   │   │   ├── add_food_button_widget.dart                 # Кнопка додавання продукту
+│   │   │   ├── meal_header_widget.dart                     # Заголовок прийому їжі
+│   │   │   └── meal_note_widget.dart                       # Примітка до прийому їжі
+│   │   ├── daily_summary_bar_widget.dart                   # Слайдер плиток нутрієнтів
+│   │   ├── food_details_app_bar_widget.dart                # Верхня панель деталей
+│   │   ├── food_row_item_widget.dart                       # Рядок продукту
+│   │   └── meal_card_widget.dart                           # Картка прийому їжі
 │   │
-│   ├── main_screen_widget/                            # Віджети головного екрана
-│   │   ├── daily_summary_widget/                      # Вкладені елементи зведення
-│   │   │   ├── metric_card_widget.dart                # Картка показника нутрієнта
-│   │   │   └── nutrient_item_data_widget.dart         # Структура елемента нутрієнта
+│   ├── main_screen_widget/                                 # Віджети головного екрана
+│   │   ├── daily_summary_widget/                           # Вкладені елементи зведення
+│   │   │   ├── metric_card_widget.dart                     # Картка показника нутрієнта
+│   │   │   └── nutrient_item_data_widget.dart              # Структура елемента нутрієнта
 │   │   │
-│   │   ├── family_notes_widget/                       # Модуль нотаток
-│   │   │   ├── add_note_dialog_widget.dart            # Діалог створення нотатки
-│   │   │   ├── edit_note_dialog_widget.dart           # Діалог редагування нотатки
-│   │   │   ├── family_notes_full_screen_widget.dart   # Архів нотаток
-│   │   │   └── note_card_widget.dart                  # Картка нотатки
+│   │   ├── family_notes_widget/                            # Модуль нотаток
+│   │   │   ├── add_note_dialog_widget.dart                 # Діалог створення нотатки
+│   │   │   ├── edit_note_dialog_widget.dart                # Діалог редагування нотатки
+│   │   │   ├── family_notes_full_screen_widget.dart        # Архів нотаток
+│   │   │   └── note_card_widget.dart                       # Картка нотатки
 │   │   │
-│   │   ├── main_app_bar_widget/                       # Елементи верхньої панелі
-│   │   │   └── app_drawer_widget.dart                 # Виринаюче меню (endDrawer)
+│   │   ├── main_app_bar_widget/                            # Елементи верхньої панелі
+│   │   │   └── app_drawer_widget.dart                      # Виринаюче меню (endDrawer)
 │   │   │
-│   │   ├── banner_widget.dart                         # Інформаційний банер
-│   │   ├── daily_summary_widget.dart                  # Головне зведення за день
-│   │   ├── databases_navigation_tile_widget.dart      # Плитка переходу до баз
-│   │   ├── family_notes_widget.dart                   # Компактна мініатюра нотаток
-│   │   ├── main_app_bar_widget.dart                   # Верхня панель головного екрана
-│   │   ├── nutrient_tile_widget.dart                  # Плитка відображення додаткових показників (Волокна, Вода, БЖУ...)
-│   │   └── phe_expansion_tile_widget.dart             # Розгорнута плитка фенілаланіну та супутніх амінокислот
+│   │   ├── banner_widget.dart                              # Інформаційний банер
+│   │   ├── daily_summary_widget.dart                       # Головне зведення за день
+│   │   ├── databases_navigation_tile_widget.dart           # Плитка переходу до баз
+│   │   ├── family_notes_widget.dart                        # Компактна мініатюра нотаток
+│   │   ├── main_app_bar_widget.dart                        # Верхня панель головного екрана
+│   │   ├── nutrient_tile_widget.dart                       # Плитка відображення додаткових показників
+│   │   └── phe_expansion_tile_widget.dart                  # Розгорнута плитка фенілаланіну та супутніх амінокислот
 │   │
-│   └── splash_screen_widget/                          # Елементи заставки
-│       └── splash_logo_widget.dart                    # Віджет логотипу
+│   └── splash_screen_widget/                               # Елементи заставки
+│       └── splash_logo_widget.dart                         # Віджет логотипу
 │
-└── main.dart                                          # Точка входу
+└── main.dart                                               # Точка входу
