@@ -31,11 +31,11 @@ class DietSettingsService {
   double? targetLeu; // Лейцин (мг)
   double? targetTyr; // Тирозин (мг)
   double? targetMet; // Метіонін (мг)
-  double? targetLes; // Лізин (мг)
+  double? targetLys; // Лізин (мг)
 
   // Геттер/сеттер для коректного псевдоніма лізину (Lys)
-  double? get targetLys => targetLes;
-  set targetLys(double? value) => targetLes = value;
+  //double? get targetLys => targetLes;
+  //set targetLys(double? value) => targetLes = value;
 
   // Додаткові цільові норми для нутрієнтів
   double? targetFiber = 30.0; // Волокна / Клітковина (г)
@@ -74,7 +74,7 @@ class DietSettingsService {
     targetLeu = leu;
     targetTyr = tyr;
     targetMet = met;
-    targetLes = lys;
+    targetLys = lys;
 
     targetFiber = fiber;
     targetSalt = salt;

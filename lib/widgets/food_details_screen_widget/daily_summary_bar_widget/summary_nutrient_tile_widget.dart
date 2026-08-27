@@ -78,7 +78,7 @@ class SummaryNutrientTileWidget extends StatelessWidget {
                     children: [
                       _buildAminoLabel('Tyr', item.aminoMap!['Tyr']!),
                       const SizedBox(height: 2),
-                      _buildAminoLabel('Les', item.aminoMap!['Les']!),
+                      _buildAminoLabel('Lys', item.aminoMap!['Lys']!),
                     ],
                   ),
                 ],

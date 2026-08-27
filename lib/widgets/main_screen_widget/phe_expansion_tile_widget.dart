@@ -162,7 +162,7 @@ class _PheExpansionTileWidgetState extends State<PheExpansionTileWidget> {
                     children: [
                       _buildAminoCard('Метіонін (Met)', widget.met, Colors.amber.shade900),
                       const SizedBox(width: 8),
-                      _buildAminoCard('Лізин (Les)', widget.les, Colors.deepOrange),
+                      _buildAminoCard('Лізин (Lys)', widget.les, Colors.deepOrange),
                     ],
                   ),
                 ],

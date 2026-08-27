@@ -76,7 +76,7 @@ class SummaryNutrientFactory {
         unit: 'ФА',
         baseColor: Colors.purple,
         icon: Icons.science,
-        aminoMap: {'Leu': totalLeu, 'Tyr': totalTyr, 'Met': totalMet, 'Les': totalLys},
+        aminoMap: {'Leu': totalLeu, 'Tyr': totalTyr, 'Met': totalMet, 'Lys': totalLys},
       ),
       // 2. Калорії
       SummaryNutrientItemModel(

@@ -1,56 +1,86 @@
 // ============================================================================
-// НАЗВА ФАЙЛУ: add_food_dialog_widget.dart
+// НАЗВА ФАЙЛУ: product_edit_dialog_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Спливаюче вікно вводу показників продукту для щоденника
+// ПРИЗНАЧЕННЯ: Діалогове вікно створення та редагування продукту в базі
 // ============================================================================
 
 import 'package:flutter/material.dart';
-import 'package:my_diet/models/food_item_model.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/models/product_model.dart';
 import 'package:my_diet/widgets/common_widget/app_number_input_field_widget.dart';
 import 'package:my_diet/widgets/common_widget/app_text_input_field_widget.dart';
 
 // ============================================================================
-// [ВУЗОЛ 4]: ДІАЛОГОВЕ ВІКНО ДОДАВАННЯ ПРОДУКТУ В ЩОДЕННИК
+// [ВУЗОЛ 5]: ДІАЛОГОВЕ ВІКНО СТВОРЕННЯ ТА РЕДАГУВАННЯ ПРОДУКТУ БАЗИ
 // ============================================================================
-class AddFoodDialogWidget extends StatefulWidget {
-  final DateTime date;
-  final String mealId;
-  final String mealTitle;
+class ProductEditDialogWidget extends StatefulWidget {
+  final ProductModel? product; // null для створення, об'єкт для редагування
 
-  const AddFoodDialogWidget({super.key, required this.date, required this.mealId, required this.mealTitle});
+  const ProductEditDialogWidget({super.key, this.product});
 
   @override
-  State<AddFoodDialogWidget> createState() => _AddFoodDialogWidgetState();
+  State<ProductEditDialogWidget> createState() => _ProductEditDialogWidgetState();
 }
 
-class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
+class _ProductEditDialogWidgetState extends State<ProductEditDialogWidget> {
   final _formKey = GlobalKey<FormState>();
 
-  // Контролери
-  final _nameController = TextEditingController();
-  final _weightController = TextEditingController();
-  final _pheController = TextEditingController();
-  final _caloriesController = TextEditingController();
-  final _proteinController = TextEditingController();
-  final _carbsController = TextEditingController();
-  final _fatController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _categoryController;
 
-  final _leucineController = TextEditingController();
-  final _tyrosineController = TextEditingController();
-  final _methionineController = TextEditingController();
-  final _lysineController = TextEditingController();
+  late final TextEditingController _pheController;
+  late final TextEditingController _caloriesController;
+  late final TextEditingController _proteinController;
+  late final TextEditingController _carbsController;
+  late final TextEditingController _fatController;
 
-  final _fiberController = TextEditingController();
-  final _saltController = TextEditingController();
-  final _sugarController = TextEditingController();
-  final _waterController = TextEditingController();
-  final _energyController = TextEditingController();
+  late final TextEditingController _leucineController;
+  late final TextEditingController _tyrosineController;
+  late final TextEditingController _methionineController;
+  late final TextEditingController _lysineController;
+
+  late final TextEditingController _fiberController;
+  late final TextEditingController _saltController;
+  late final TextEditingController _sugarController;
+  late final TextEditingController _waterController;
+  late final TextEditingController _energyController;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.product;
+
+    _nameController = TextEditingController(text: p?.name ?? '');
+    _categoryController = TextEditingController(text: p?.category ?? '');
+
+    _pheController = TextEditingController(text: _formatValue(p?.phe));
+    _caloriesController = TextEditingController(text: _formatValue(p?.calories));
+    _proteinController = TextEditingController(text: _formatValue(p?.protein));
+    _carbsController = TextEditingController(text: _formatValue(p?.carbs));
+    _fatController = TextEditingController(text: _formatValue(p?.fat));
+
+    _leucineController = TextEditingController(text: _formatValue(p?.leucine));
+    _tyrosineController = TextEditingController(text: _formatValue(p?.tyrosine));
+    _methionineController = TextEditingController(text: _formatValue(p?.methionine));
+    _lysineController = TextEditingController(text: _formatValue(p?.lysine));
+
+    _fiberController = TextEditingController(text: _formatValue(p?.fiber));
+    _saltController = TextEditingController(text: _formatValue(p?.salt));
+    _sugarController = TextEditingController(text: _formatValue(p?.sugar));
+    _waterController = TextEditingController(text: _formatValue(p?.water));
+    _energyController = TextEditingController(text: _formatValue(p?.energy));
+  }
+
+  String _formatValue(double? val) {
+    if (val == null || val == 0.0) return '';
+    if (val == val.toInt()) return val.toInt().toString();
+    return val.toString();
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _weightController.dispose();
+    _categoryController.dispose();
+
     _pheController.dispose();
     _caloriesController.dispose();
     _proteinController.dispose();
@@ -71,7 +101,6 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
     super.dispose();
   }
 
-  // Парсинг значень з дефолтними 0.0 (або 100 для ваги)
   double _parse(TextEditingController controller, [double defaultValue = 0.0]) {
     final text = controller.text.trim().replaceAll(',', '.');
     if (text.isEmpty) return defaultValue;
@@ -80,36 +109,36 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
-      final weight = _parse(_weightController, 100.0);
+      final isEditing = widget.product != null;
 
-      final item = FoodItemModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+      final updatedProduct = ProductModel(
+        id: isEditing ? widget.product!.id : DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameController.text.trim(),
-        weight: weight,
-        phe: (_parse(_pheController) * weight) / 100,
-        calories: (_parse(_caloriesController) * weight) / 100,
-        protein: (_parse(_proteinController) * weight) / 100,
-        carbs: (_parse(_carbsController) * weight) / 100,
-        fat: (_parse(_fatController) * weight) / 100,
-        leucine: (_parse(_leucineController) * weight) / 100,
-        tyrosine: (_parse(_tyrosineController) * weight) / 100,
-        methionine: (_parse(_methionineController) * weight) / 100,
-        lysine: (_parse(_lysineController) * weight) / 100,
-        fiber: (_parse(_fiberController) * weight) / 100,
-        salt: (_parse(_saltController) * weight) / 100,
-        sugar: (_parse(_sugarController) * weight) / 100,
-        water: (_parse(_waterController) * weight) / 100,
-        energy: (_parse(_energyController) * weight) / 100,
+        category: _categoryController.text.trim(),
+        phe: _parse(_pheController),
+        calories: _parse(_caloriesController),
+        protein: _parse(_proteinController),
+        carbs: _parse(_carbsController),
+        fat: _parse(_fatController),
+        leucine: _parse(_leucineController),
+        tyrosine: _parse(_tyrosineController),
+        methionine: _parse(_methionineController),
+        lysine: _parse(_lysineController),
+        fiber: _parse(_fiberController),
+        salt: _parse(_saltController),
+        sugar: _parse(_sugarController),
+        water: _parse(_waterController),
+        energy: _parse(_energyController),
       );
 
-      MockDietRepository().addFoodToMeal(widget.date, widget.mealId, item);
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(updatedProduct);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final isEditing = widget.product != null;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -126,7 +155,7 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Додати в "${widget.mealTitle}"',
+                        isEditing ? 'Редагувати продукт' : 'Новий продукт бази',
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -143,10 +172,10 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 8),
-                        _buildSectionHeader('Основна інформація'),
+                        _buildSectionHeader('Загальні дані'),
                         AppTextInputFieldWidget(controller: _nameController, label: 'Назва продукту', isRequired: true),
                         const SizedBox(height: 10),
-                        AppNumberInputFieldWidget(controller: _weightController, label: 'Вага (грам)', hintText: '100'),
+                        AppTextInputFieldWidget(controller: _categoryController, label: 'Категорія'),
 
                         const SizedBox(height: 16),
                         _buildSectionHeader('Основні нутрієнти (на 100 г)'),
@@ -247,15 +276,23 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                 ),
 
                 const Divider(),
+
+                // [ВУЗОЛ 5.1]: ПАНЕЛЬ УПРАВЛІННЯ ВІКНОМ (З КНОПКОЮ ВИДАЛЕННЯ ДЛЯ ІСНУЮЧИХ ЗАПИСІВ)
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    if (isEditing)
+                      IconButton(
+                        tooltip: 'Видалити продукт',
+                        icon: Icon(Icons.delete_outline, color: Colors.red.shade700),
+                        onPressed: () => Navigator.of(context).pop('delete'),
+                      ),
+                    const Spacer(),
                     TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Скасувати')),
                     const SizedBox(width: 8),
                     ElevatedButton.icon(
                       onPressed: _submit,
-                      icon: const Icon(Icons.add, size: 18),
-                      label: const Text('Додати'),
+                      icon: Icon(isEditing ? Icons.save : Icons.add, size: 18),
+                      label: Text(isEditing ? 'Зберегти' : 'Додати'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal.shade700,
                         foregroundColor: Colors.white,

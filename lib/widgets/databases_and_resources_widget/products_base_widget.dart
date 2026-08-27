@@ -1,8 +1,9 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: products_base_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Головний екран-хаб бази продуктів. Керує стан-менеджментом,
-//              пошуком, скиданням даних та відображенням списку.
+// ПРИЗНАЧЕННЯ: Головний віджет екрана бази продуктів. Забезпечує відображення,
+//              пошук, сортування за релевантністю, додавання, редагування,
+//              видалення та скидання списку продуктів через ProductRepository.
 // ШЛЯХ: lib/widgets/databases_and_resources_widget/products_base_widget.dart
 // ============================================================================
 
@@ -10,11 +11,10 @@ import 'package:flutter/material.dart';
 import 'package:my_diet/models/product_model.dart';
 import 'package:my_diet/repositories/product_repository.dart';
 import 'package:my_diet/widgets/databases_and_resources_widget/products_base_widget/product_card_widget.dart';
+import 'package:my_diet/widgets/databases_and_resources_widget/products_base_widget/product_edit_dialog_widget.dart';
 import 'package:my_diet/widgets/databases_and_resources_widget/products_base_widget/product_search_bar_widget.dart';
 
-// ----------------------------------------------------------------------------
-// [ВУЗОЛ 1]: ГОЛОВНИЙ ВІДЖЕТ БАЗИ ПРОДУКТІВ (ProductsBaseWidget)
-// ----------------------------------------------------------------------------
+/// [ВУЗОЛ 1]: ГОЛОВНИЙ ВІДЖЕТ БАЗИ ПРОДУКТІВ
 class ProductsBaseWidget extends StatefulWidget {
   const ProductsBaseWidget({super.key});
 
@@ -24,164 +24,241 @@ class ProductsBaseWidget extends StatefulWidget {
 
 class _ProductsBaseWidgetState extends State<ProductsBaseWidget> {
   // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.1]: СТАН ТА КОНТРОЛЕРИ
+  // СЕРВІСИ ТА СТАН ВІДЖЕТА
   // --------------------------------------------------------------------------
+
+  /// Репозиторій для роботи з даними продуктів (SharedPreferences / Assets JSON)
   final ProductRepository _repository = ProductRepository();
+
+  /// Контролер для зчитування пошукового запиту з текстового поля
   final TextEditingController _searchController = TextEditingController();
 
+  /// Повний список усіх завантажених продуктів із локальної бази
   List<ProductModel> _allProducts = [];
+
+  /// Відфільтрований та відсортований список продуктів для відображення
   List<ProductModel> _filteredProducts = [];
+
+  /// Прапорець фонового завантаження даних
   bool _isLoading = true;
+
+  // --------------------------------------------------------------------------
+  // ЖИТТЄВИЙ ЦИКЛ (LIFECYCLE)
+  // --------------------------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
+    // Первинне завантаження бази продуктів при ініціалізації віджета
     _loadProducts();
+    // Підключення слухача до пошукового рядка для миттєвого реагування на ввід
+    _searchController.addListener(_filterProducts);
   }
 
   @override
   void dispose() {
+    // Звільнення ресурсів контролера та слухача при знищенні віджета
+    _searchController.removeListener(_filterProducts);
     _searchController.dispose();
     super.dispose();
   }
 
   // --------------------------------------------------------------------------
-  // [ВУЗОЛ 2]: ЛОГІКА ЗАВАНТАЖЕННЯ ТА ФІЛЬТРАЦІЇ
+  // БІЗНЕС-ЛОГІКА ТА ЗЧИТУВАННЯ ДАНИХ
   // --------------------------------------------------------------------------
 
-  /// [ВУЗОЛ 2.1]: Первинне завантаження з репозиторію
+  /// [ВУЗОЛ 2]: ЗЧИТУВАННЯ ПРОДУКТІВ З РЕПОЗИТОРІЮ
+  /// Асинхронно отримує список продуктів та оновлює локальний стан
   Future<void> _loadProducts() async {
     setState(() => _isLoading = true);
     final products = await _repository.loadProducts();
     setState(() {
       _allProducts = products;
-      _filteredProducts = products;
       _isLoading = false;
     });
+    // Примусово застосовуємо фільтрацію для нового завантаженого списку
+    _filterProducts();
   }
 
-  /// [ВУЗОЛ 2.2]: Фільтрація та релевантне сортування за запитом
-  void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase().trim();
-    setState(() {
-      if (query.isEmpty) {
+  /// [ВУЗОЛ 3]: ФІЛЬТРАЦІЯ ТА РОЗУМНЕ СОРТУВАННЯ
+  /// Здійснює пошук за назвою та категорією, сортує результати за релевантністю:
+  /// 1. Точні збіги -> 2. Початок слова -> 3. Алфавітний порядок
+  void _filterProducts() {
+    final query = _searchController.text.trim().toLowerCase();
+
+    // Якщо пошуковий рядок порожній — показуємо весь список продуктів
+    if (query.isEmpty) {
+      setState(() {
         _filteredProducts = List.from(_allProducts);
-      } else {
-        // 1. Відбірка співпадінь
-        final matched = _allProducts.where((product) {
-          final name = product.name.toLowerCase();
-          final category = product.category.toLowerCase();
-          return name.contains(query) || category.contains(query);
-        }).toList();
+      });
+      return;
+    }
 
-        // 2. Сортування за релевантністю
-        matched.sort((a, b) {
-          final aName = a.name.toLowerCase();
-          final bName = b.name.toLowerCase();
+    // 1. Первинна фільтрація продуктів за назвою або категорією
+    final matches = _allProducts.where((p) {
+      final nameMatches = p.name.toLowerCase().contains(query);
+      final categoryMatches = p.category.toLowerCase().contains(query);
+      return nameMatches || categoryMatches;
+    }).toList();
 
-          // Пріоритет 1: Точний збіг назви
-          final aExact = aName == query;
-          final bExact = bName == query;
-          if (aExact && !bExact) return -1;
-          if (!aExact && bExact) return 1;
+    // 2. Багаторівневе сортування отриманого списку за релевантністю
+    matches.sort((a, b) {
+      final aName = a.name.toLowerCase();
+      final bName = b.name.toLowerCase();
 
-          // Пріоритет 2: Назва ПОЧИНАЄТЬСЯ з шуканого слова (напр. "Яблуко...")
-          final aStartsWith = aName.startsWith(query);
-          final bStartsWith = bName.startsWith(query);
-          if (aStartsWith && !bStartsWith) return -1;
-          if (!aStartsWith && bStartsWith) return 1;
+      // Рівень 1: Точний збіг назви з шуканим запитом
+      final aExact = aName == query;
+      final bExact = bName == query;
+      if (aExact && !bExact) return -1;
+      if (!aExact && bExact) return 1;
 
-          // Пріоритет 3: За алфавітом
-          return aName.compareTo(bName);
-        });
+      // Рівень 2: Назва продукту починається з шуканої фрази
+      final aStarts = aName.startsWith(query);
+      final bStarts = bName.startsWith(query);
+      if (aStarts && !bStarts) return -1;
+      if (!aStarts && bStarts) return 1;
 
-        _filteredProducts = matched;
-      }
+      // Рівень 3: Стандартне алфавітне сортування
+      return aName.compareTo(bName);
+    });
+
+    setState(() {
+      _filteredProducts = matches;
     });
   }
 
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 3]: СКИДАННЯ БАЗИ ТА ДІЇ З ПРОДУКТАМИ
-  // --------------------------------------------------------------------------
+  /// [ВУЗОЛ 4]: ДОДАВАННЯ НОВОГО ПРОДУКТУ
+  /// Відкриває діалог створення та зберігає оновлений список у сховище
+  Future<void> _openAddProductDialog() async {
+    final newProduct = await showDialog<dynamic>(
+      context: context,
+      builder: (context) => const ProductEditDialogWidget(),
+    );
 
-  /// [ВУЗОЛ 3.1]: Скидання бази до початкового еталону з assets
-  Future<void> _resetToDefault() async {
+    if (newProduct is ProductModel) {
+      final updatedList = List<ProductModel>.from(_allProducts)..insert(0, newProduct);
+      await _repository.saveProducts(updatedList);
+      await _loadProducts();
+    }
+  }
+
+  /// [ВУЗОЛ 5]: РЕДАГУВАННЯ ТА ОБРОБКА ВИДАЛЕННЯ З ДІАЛОГУ
+  /// Відкриває модальний діалог із заповненими даними вибраного продукту.
+  /// Очікує повернутий ProductModel (для збереження) або рядок 'delete' (для видалення).
+  Future<void> _openEditProductDialog(ProductModel product) async {
+    final result = await showDialog<dynamic>(
+      context: context,
+      builder: (context) => ProductEditDialogWidget(product: product),
+    );
+
+    if (result == 'delete') {
+      await _deleteProduct(product);
+    } else if (result is ProductModel) {
+      final index = _allProducts.indexWhere((p) => p.id == result.id);
+      if (index != -1) {
+        _allProducts[index] = result;
+        await _repository.saveProducts(_allProducts);
+        await _loadProducts();
+      }
+    }
+  }
+
+  /// [ВУЗОЛ 6]: СКИДАННЯ БАЗИ ДО ЕТАЛОНУ
+  /// Перезаписує збережені дані початковим JSON з assets та оновлює екран
+  Future<void> _resetDatabase() async {
+    final resetProducts = await _repository.resetToDefault();
+    setState(() {
+      _allProducts = resetProducts;
+    });
+    _filterProducts();
+  }
+
+  /// [ВУЗОЛ 7]: ВИДАЛЕННЯ ПРОДУКТУ З ПІДТВЕРДЖЕННЯМ
+  /// Відображає попереджувальний діалог і видаляє продукт із локального списку та сховища
+  Future<void> _deleteProduct(ProductModel product) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Скидання бази'),
-        content: const Text('Ви дійсно бажаєте скинути всі зміни і повернути початкову базу продуктів?'),
+        title: const Text('Видалення продукту'),
+        content: Text('Ви дійсно бажаєте видалити "${product.name.isEmpty ? 'Без назви' : product.name}" з бази?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Скасувати')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Скасувати')),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Скинути', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red.shade700, foregroundColor: Colors.white),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Видалити'),
           ),
         ],
       ),
     );
 
     if (confirm == true) {
-      setState(() => _isLoading = true);
-      final resetProducts = await _repository.resetToDefault();
-      setState(() {
-        _allProducts = resetProducts;
-        _filteredProducts = resetProducts;
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Базу продуктів відновлено до початкового стану')));
-      }
+      _allProducts.removeWhere((p) => p.id == product.id);
+      await _repository.saveProducts(_allProducts);
+      await _loadProducts();
     }
   }
 
-  /// [ВУЗОЛ 3.2]: Виклики редагування продукту
-  void _editProduct(ProductModel product) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Редагування продукту: ${product.name}')));
-  }
+  // --------------------------------------------------------------------------
+  // ПОБУДОВА ІНТЕРФЕЙСУ (UI BUILD)
+  // --------------------------------------------------------------------------
 
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 4]: ПУБЛІЧНИЙ ІНТЕРФЕЙС ЕКРАНА (BUILD)
-  // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    // Індикатор завантаження під час первинного звернення до репозиторію
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.teal));
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('База продуктів'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.restore),
-            tooltip: 'Скинути базу до початкової',
-            onPressed: _resetToDefault,
+      body: Column(
+        children: [
+          // Пошуковий рядок (ізольований віджет)
+          ProductSearchBarWidget(controller: _searchController, onChanged: () {}),
+
+          // Основна область: список продуктів або заглушка порожнього пошуку
+          Expanded(
+            child: _filteredProducts.isEmpty
+                ? const Center(
+                    child: Text('Продуктів не знайдено', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: _filteredProducts.length,
+                    itemBuilder: (context, index) {
+                      final product = _filteredProducts[index];
+                      return ProductCardWidget(
+                        product: product,
+                        onEdit: () => _openEditProductDialog(product),
+                        onDelete: () => _deleteProduct(product),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                // [ВУЗОЛ 4.1]: ВІДОКРЕБЛЕНИЙ ВІДЖЕТ ПОШУКОВОГО РЯДКА
-                ProductSearchBarWidget(controller: _searchController, onChanged: _onSearchChanged),
 
-                // [ВУЗОЛ 4.2]: СПИСОК КАРТОК ПРОДУКТІВ
-                Expanded(
-                  child: _filteredProducts.isEmpty
-                      ? const Center(child: Text('Продуктів не знайдено'))
-                      : ListView.builder(
-                          itemCount: _filteredProducts.length,
-                          itemBuilder: (context, index) {
-                            final product = _filteredProducts[index];
-                            // [ВУЗОЛ 4.2.1]: ВІДОКРЕБЛЕНИЙ ВІДЖЕТ КАРТКИ ПРОДУКТУ
-                            return ProductCardWidget(product: product, onEdit: () => _editProduct(product));
-                          },
-                        ),
-                ),
-              ],
-            ),
+      // Плаваючі кнопки дій (Скидання еталону та Додавання нового продукту)
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton.small(
+            heroTag: 'reset_btn',
+            onPressed: _resetDatabase,
+            backgroundColor: Colors.grey.shade400,
+            tooltip: 'Скинути до еталону з JSON',
+            child: const Icon(Icons.refresh, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          FloatingActionButton.extended(
+            heroTag: 'add_btn',
+            onPressed: _openAddProductDialog,
+            backgroundColor: Colors.teal.shade700,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text('Додати продукт', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 }

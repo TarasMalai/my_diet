@@ -1,105 +1,70 @@
 // ============================================================================
-// НАЗВА ФАЙЛУ: food_repository_sesrvice.dart
+// НАЗВА ФАЙЛУ: product_repository.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Модель даних продукту харчування з підтримкою категорій та виробника
+// ПРИЗНАЧЕННЯ: Локальний репозиторій для роботи з базою продуктів.
+//              Підтримує збереження та скидання даних як у Chrome, так і на ПК.
 // ============================================================================
 
-// ----------------------------------------------------------------------------
-// [ВУЗОЛ 1]: МОДЕЛЬ ПРОДУКТУ / ХАРЧОВОГО ЕЛЕМЕНТА (FoodItemModel)
-// ----------------------------------------------------------------------------
-class FoodItemModel {
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.1]: ПОЛЯ МОДЕЛІ (Властивості продукту)
-  // --------------------------------------------------------------------------
-  final String id;
-  final String name;
-  final String category;
-  final String manufacturer; // Виробник продукту
-  final double weight;
-  final double phe;
-  final double calories;
-  final double protein;
-  final double carbs;
-  final double fat;
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.2]: ГОЛОВНИЙ КОНСТРУКТОР
-  // --------------------------------------------------------------------------
-  const FoodItemModel({
-    required this.id,
-    required this.name,
-    this.category = '',
-    this.manufacturer = '', // За замовчуванням порожній рядок
-    required this.weight,
-    required this.phe,
-    required this.calories,
-    required this.protein,
-    required this.carbs,
-    required this.fat,
-  });
+// Використовуємо абсолютний імпорт через назву пакета проєкту
+import 'package:my_diet/models/product_model.dart';
 
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.3]: СЕРІАЛІЗАЦІЯ З JSON (FoodItemModel.fromJson)
-  // --------------------------------------------------------------------------
-  factory FoodItemModel.fromJson(Map<String, dynamic> json) {
-    return FoodItemModel(
-      id: json['id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
-      category: json['category']?.toString() ?? '',
-      manufacturer: json['manufacturer']?.toString() ?? '', // Зчитуємо з JSON
-      weight: (json['weight'] as num?)?.toDouble() ?? 0.0,
-      phe: (json['phe'] as num?)?.toDouble() ?? 0.0,
-      calories: (json['calories'] as num?)?.toDouble() ?? 0.0,
-      protein: (json['protein'] as num?)?.toDouble() ?? 0.0,
-      carbs: (json['carbs'] as num?)?.toDouble() ?? 0.0,
-      fat: (json['fat'] as num?)?.toDouble() ?? 0.0,
-    );
+class ProductRepository {
+  // Ключ, за яким база JSON зберігається в пам'яті пристрою/браузера
+  static const String _storageKey = 'user_products_db_json';
+
+  /// [ВУЗОЛ 1]: ЗАВАНТАЖЕННЯ ПРОДУКТІВ
+  /// Завантажує список продуктів з локальної пам'яті.
+  /// Якщо пам'ять порожня (перший запуск) — читає еталон з assets та зберігає його.
+  Future<List<ProductModel>> loadProducts() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? jsonString = prefs.getString(_storageKey);
+
+      // Якщо в локальному сховищі ще немає даних, зчитуємо початковий JSON з assets
+      if (jsonString == null || jsonString.isEmpty) {
+        jsonString = await rootBundle.loadString('assets/products_database.json');
+        await prefs.setString(_storageKey, jsonString);
+      }
+
+      final List<dynamic> jsonList = jsonDecode(jsonString);
+      return jsonList.map((json) => ProductModel.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('Помилка завантаження продуктів: $e');
+      return [];
+    }
   }
 
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.4]: СЕРІАЛІЗАЦІЯ В JSON (toJson)
-  // --------------------------------------------------------------------------
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'category': category,
-      'manufacturer': manufacturer, // Зберігаємо в JSON
-      'weight': weight,
-      'phe': phe,
-      'calories': calories,
-      'protein': protein,
-      'carbs': carbs,
-      'fat': fat,
-    };
+  /// [ВУЗОЛ 2]: ЗБЕРЕЖЕННЯ ЗМІН
+  /// Зберігає оновлений список продуктів у локальне сховище
+  Future<void> saveProducts(List<ProductModel> products) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String jsonString = jsonEncode(products.map((p) => p.toJson()).toList());
+      await prefs.setString(_storageKey, jsonString);
+    } catch (e) {
+      debugPrint('Помилка збереження продуктів: $e');
+    }
   }
 
-  // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.5]: КОПІЮВАННЯ ОБ'ЄКТА З ЗМІНАМИ (copyWith)
-  // --------------------------------------------------------------------------
-  FoodItemModel copyWith({
-    String? id,
-    String? name,
-    String? category,
-    String? manufacturer,
-    double? weight,
-    double? phe,
-    double? calories,
-    double? protein,
-    double? carbs,
-    double? fat,
-  }) {
-    return FoodItemModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      category: category ?? this.category,
-      manufacturer: manufacturer ?? this.manufacturer,
-      weight: weight ?? this.weight,
-      phe: phe ?? this.phe,
-      calories: calories ?? this.calories,
-      protein: protein ?? this.protein,
-      carbs: carbs ?? this.carbs,
-      fat: fat ?? this.fat,
-    );
+  /// [ВУЗОЛ 3]: СКИДАННЯ ДО ЕТАЛОНУ
+  /// Перезаписує збережені дані початковим файлом з assets
+  Future<List<ProductModel>> resetToDefault() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String assetContent = await rootBundle.loadString('assets/products_database.json');
+
+      await prefs.setString(_storageKey, assetContent);
+
+      final List<dynamic> jsonList = jsonDecode(assetContent);
+      return jsonList.map((json) => ProductModel.fromJson(json)).toList();
+    } catch (e) {
+      debugPrint('Помилка скидання бази продуктів: $e');
+      return [];
+    }
   }
 }

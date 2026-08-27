@@ -1,7 +1,7 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: product_card_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Картка продукту із повними назвами основних нутрієнтів.
+// ПРИЗНАЧЕННЯ: Картка продукту із повними назвами основних нутрієнтів та кнопками дій.
 // ШЛЯХ: lib/widgets/databases_and_resources_widget/products_base_widget/product_card_widget.dart
 // ============================================================================
 
@@ -11,8 +11,9 @@ import 'package:my_diet/models/product_model.dart';
 class ProductCardWidget extends StatelessWidget {
   final ProductModel product;
   final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const ProductCardWidget({super.key, required this.product, required this.onEdit});
+  const ProductCardWidget({super.key, required this.product, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -32,18 +33,22 @@ class ProductCardWidget extends StatelessWidget {
           childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
 
           // ------------------------------------------------------------------
-          // [ВУЗОЛ 1]: ЗГОРНУТИЙ СТАН (ПОВНІ НАЗВИ ОСНОВНИХ НУТРІЄНТІВ)
+          // [ВУЗОЛ 1]: ЗГОРНУТИЙ СТАН
           // ------------------------------------------------------------------
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                product.name,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                product.name.isEmpty ? '(Без назви)' : product.name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: product.name.isEmpty ? Colors.red.shade700 : Colors.black87,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
-                product.category.toUpperCase(),
+                product.category.isEmpty ? 'БЕЗ КАТЕГОРІЇ' : product.category.toUpperCase(),
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -69,7 +74,7 @@ class ProductCardWidget extends StatelessWidget {
           ),
 
           // ------------------------------------------------------------------
-          // [ВУЗОЛ 2]: РОЗГОРНУТИЙ СТАН (ДОДАТКОВІ НУТРІЄНТИ)
+          // [ВУЗОЛ 2]: РОЗГОРНУТИЙ СТАН
           // ------------------------------------------------------------------
           children: [
             const Divider(height: 16, thickness: 1),
@@ -99,19 +104,34 @@ class ProductCardWidget extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit, size: 18),
-                label: const Text('Правити'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal.shade700,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            // [ВУЗОЛ 2.1]: ПАНЕЛЬ КНОПОК ДІЙ (ВИДАЛИТИ ТА ПРАВИТИ)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_outline, size: 18),
+                  label: const Text('Видалити'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red.shade700,
+                    side: BorderSide(color: Colors.red.shade300),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit, size: 18),
+                  label: const Text('Правити'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -120,7 +140,7 @@ class ProductCardWidget extends StatelessWidget {
   }
 
   // --------------------------------------------------------------------------
-  // [ВУЗОЛ 3]: ДОПОМІЖНИЙ МЕТОД ПЛАШОК
+  // [ВУЗОЛ 3]: ДОПОМІЖНІ МЕТОДИ ПЛАШОК
   // --------------------------------------------------------------------------
   Widget _buildMainBadge(String label, String value, Color color) {
     return Container(
