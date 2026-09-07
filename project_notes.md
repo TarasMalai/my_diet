@@ -116,6 +116,8 @@ lib/
 │   ├── nutrient_config_model.dart                          # Модель конфігурації нутрієнтів
 │   ├── product_model.dart                                  # Модель продукту з повним набором нутрієнтів та амінокислот
 │   └── summary_nutrient_item_model.dart                    # Модель плитки підсумкового нутрієнта
+├── repositories/                                           # Репозиторій
+│   └── product_repository.dart                             # Локальний репозиторій для роботи з базою продуктів. Підтримує збереження та скидання даних.
 │
 ├── screens/                                                # Екрани додатка
 │   ├── databases_and_resources_screen.dart                 # Екран баз даних та ресурсів
@@ -136,7 +138,10 @@ lib/
 │   ├── common_widget/                                      # Спільні віджети
 │   │   ├── calendar_widget/                                # Вкладені елементи календаря
 │   │   │   └── date_picker_dialog_widget.dart              # Кастомний діалог вибору дати
-│   │   └── calendar_widget.dart                            # Спільний віджет календаря
+│   │   ├── calendar_widget.dart                            # Спільний віджет календаря
+│   │   ├── app_number_input_field_widget.dart              # Універсальне числове поле вводу нутрієнтів для Web та Mobile
+│   │   ├── app_text_input_field_widget.dart                # Універсальне текстове поле з автовиділенням та безпечним фокусом
+│   │   └── decimal_text_input_formatter.dart               # Універсальний форматер вводу чисел (крапка/кома) для Web та Mobile
 │   │
 │   ├── databases_and_resources_widget/                     # Віджети екрана баз даних
 │   │   ├── products_base_widget/                           # Вкладені елементи бази продуктів
