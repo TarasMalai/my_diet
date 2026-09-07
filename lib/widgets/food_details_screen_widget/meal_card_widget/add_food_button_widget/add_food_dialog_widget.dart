@@ -1,13 +1,15 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: add_food_dialog_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Спливаюче вікно додавання продукту в щоденник з автозаповненням з бази
+// ПРИЗНАЧЕННЯ: Спливаюче вікно додавання продукту з автозаповненням та інтеграцією з Інвентарем
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/food_item_model.dart';
 import 'package:my_diet/models/product_model.dart';
+import 'package:my_diet/models/pantry_item_model.dart';
 import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/services/pantry_service.dart';
 import 'package:my_diet/repositories/product_repository.dart';
 import 'package:my_diet/widgets/common_widget/app_number_input_field_widget.dart';
 
@@ -28,9 +30,11 @@ class AddFoodDialogWidget extends StatefulWidget {
 class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
   final _formKey = GlobalKey<FormState>();
 
-  // Список продуктів для автозаповнення
   List<ProductModel> _availableProducts = [];
   bool _isLoadingProducts = true;
+
+  // Зв'язок із Інвентарем для поточного вибраного продукту
+  PantryItemModel? _linkedPantryItem;
 
   // Контролери вводу
   final _nameController = TextEditingController();
@@ -84,18 +88,15 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
     _proteinController.dispose();
     _carbsController.dispose();
     _fatController.dispose();
-
     _leucineController.dispose();
     _tyrosineController.dispose();
     _methionineController.dispose();
     _lysineController.dispose();
-
     _fiberController.dispose();
     _saltController.dispose();
     _sugarController.dispose();
     _waterController.dispose();
     _energyController.dispose();
-
     super.dispose();
   }
 
@@ -103,43 +104,52 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
   // [ВУЗОЛ 2]: ЛОГІКА АВТОЗАПОВНЕННЯ, ПАРСИНГУ ТА ЗБЕРЕЖЕННЯ
   // ============================================================================
 
-  /// Автозаповнення полів нутрієнтів на 100г із вибраного продукту
+  /// Автозаповнення полів нутрієнтів із вибраного продукту + перевірка Інвентаря
   void _autofillFromProduct(ProductModel product) {
-    _nameController.text = product.name;
+    setState(() {
+      _nameController.text = product.name;
 
-    _caloriesController.text = product.calories > 0 ? _formatNum(product.calories) : '';
-    _pheController.text = product.phe > 0 ? _formatNum(product.phe) : '';
-    _proteinController.text = product.protein > 0 ? _formatNum(product.protein) : '';
-    _fatController.text = product.fat > 0 ? _formatNum(product.fat) : '';
-    _carbsController.text = product.carbs > 0 ? _formatNum(product.carbs) : '';
+      // Перевіряємо, чи є цей продукт у інвентарі
+      _linkedPantryItem = PantryService().findItem(product.name);
 
-    _leucineController.text = product.leucine > 0 ? _formatNum(product.leucine) : '';
-    _tyrosineController.text = product.tyrosine > 0 ? _formatNum(product.tyrosine) : '';
-    _methionineController.text = product.methionine > 0 ? _formatNum(product.methionine) : '';
-    _lysineController.text = product.lysine > 0 ? _formatNum(product.lysine) : '';
+      _caloriesController.text = product.calories > 0 ? _formatNum(product.calories) : '';
+      _pheController.text = product.phe > 0 ? _formatNum(product.phe) : '';
+      _proteinController.text = product.protein > 0 ? _formatNum(product.protein) : '';
+      _fatController.text = product.fat > 0 ? _formatNum(product.fat) : '';
+      _carbsController.text = product.carbs > 0 ? _formatNum(product.carbs) : '';
 
-    _fiberController.text = product.fiber > 0 ? _formatNum(product.fiber) : '';
-    _sugarController.text = product.sugar > 0 ? _formatNum(product.sugar) : '';
-    _saltController.text = product.salt > 0 ? _formatNum(product.salt) : '';
-    _waterController.text = product.water > 0 ? _formatNum(product.water) : '';
-    _energyController.text = product.energy > 0 ? _formatNum(product.energy) : '';
+      _leucineController.text = product.leucine > 0 ? _formatNum(product.leucine) : '';
+      _tyrosineController.text = product.tyrosine > 0 ? _formatNum(product.tyrosine) : '';
+      _methionineController.text = product.methionine > 0 ? _formatNum(product.methionine) : '';
+      _lysineController.text = product.lysine > 0 ? _formatNum(product.lysine) : '';
+
+      _fiberController.text = product.fiber > 0 ? _formatNum(product.fiber) : '';
+      _sugarController.text = product.sugar > 0 ? _formatNum(product.sugar) : '';
+      _saltController.text = product.salt > 0 ? _formatNum(product.salt) : '';
+      _waterController.text = product.water > 0 ? _formatNum(product.water) : '';
+      _energyController.text = product.energy > 0 ? _formatNum(product.energy) : '';
+    });
   }
 
   String _formatNum(double val) {
     return val % 1 == 0 ? val.toInt().toString() : val.toString();
   }
 
-  // Парсинг значень з дефолтними 0.0 (або 100 для ваги)
   double _parse(TextEditingController controller, [double defaultValue = 0.0]) {
     final text = controller.text.trim().replaceAll(',', '.');
     if (text.isEmpty) return defaultValue;
     return double.tryParse(text) ?? defaultValue;
   }
 
-  /// Збереження внесеного продукту та перерахунок нутрієнтів відповідно до ваги
+  /// Збереження продукту у прийом їжі та автоматичне списання з Інвентаря (якщо він там був)
   void _submit() {
     if (_formKey.currentState!.validate()) {
       final weight = _parse(_weightController, 100.0);
+
+      // Якщо продукт був прив'язаний до Інвентаря, списуємо звідти вагу автоматично!
+      if (_linkedPantryItem != null) {
+        PantryService().deductWeight(_linkedPantryItem!.id, weight);
+      }
 
       final item = FoodItemModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -167,7 +177,7 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
   }
 
   // ============================================================================
-  // [ВУЗОЛ 3]: ПЛАНУВАННЯ ТА ВІДОБРАЖЕННЯ ІНТЕРФЕЙСУ (BUILD)
+  // [ВУЗОЛ 3]: ВІДОБРАЖЕННЯ ІНТЕРФЕЙСУ (BUILD)
   // ============================================================================
   @override
   Widget build(BuildContext context) {
@@ -183,7 +193,7 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
             key: _formKey,
             child: Column(
               children: [
-                // Шапка діалогового вікна
+                // Шапка діалогу
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -209,8 +219,35 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
                         const SizedBox(height: 8),
                         _buildSectionHeader('Основна інформація'),
 
-                        // Пошук з Автозаповненням та пріоритетним сортуванням
+                        // Поле пошуку з автозаповненням
                         _buildProductAutocompleteField(),
+
+                        // Індикатор наявності в Інвентарі (якщо знайдено)
+                        if (_linkedPantryItem != null) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.teal.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.teal.shade200),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.home_outlined, size: 16, color: Colors.teal),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'В інвентарі є: ${_linkedPantryItem!.weightInGram} г (буде списано)',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.teal.shade800,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
 
                         const SizedBox(height: 10),
                         AppNumberInputFieldWidget(controller: _weightController, label: 'Вага (грам)', hintText: '100'),
@@ -346,7 +383,6 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
   // ----------------------------------------------------------------------------
   // [ВУЗОЛ 4.1]: ВІДЖЕТ ПОЛЯ З АВТОЗАПОВНЕННЯМ ТА ПРІОРИТЕТНИМ СОРТУВАННЯМ
   // ----------------------------------------------------------------------------
-  /// Віджет поля з автозаповненням продуктів та пріоритетним сортуванням підказок
   Widget _buildProductAutocompleteField() {
     return RawAutocomplete<ProductModel>(
       textEditingController: _nameController,
@@ -357,22 +393,19 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
         }
         final query = textEditingValue.text.toLowerCase().trim();
 
-        // 1. Фільтруємо продукти, які містять введений текст
         final matches = _availableProducts.where((product) {
           return product.name.toLowerCase().contains(query);
         }).toList();
 
-        // 2. Сортуємо результати за релевантністю (пріоритетом)
         matches.sort((a, b) {
           final aName = a.name.toLowerCase();
           final bName = b.name.toLowerCase();
 
-          // Оцінка релевантності: нижче число — вищий пріоритет
           int getPriority(String name) {
-            if (name == query) return 0; // Точний збіг назви
-            if (name.startsWith(query)) return 1; // Назва починається з введеного слова
-            if (name.contains(' $query')) return 2; // Слово є окремим всередині назви
-            return 3; // Містить слово в будь-якому іншому місці
+            if (name == query) return 0;
+            if (name.startsWith(query)) return 1;
+            if (name.contains(' $query')) return 2;
+            return 3;
           }
 
           final aPriority = getPriority(aName);
@@ -382,7 +415,6 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
             return aPriority.compareTo(bPriority);
           }
 
-          // Якщо пріоритет однаковий — сортуємо за алфавітом
           return aName.compareTo(bName);
         });
 

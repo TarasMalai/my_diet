@@ -8,6 +8,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:my_diet/widgets/databases_and_resources_widget/products_base_widget.dart';
+import 'package:my_diet/screens/databases_and_resources_screen/inventory_screen.dart'; // <--- Додали імпорт екрану інвентарю
+import 'package:my_diet/screens/databases_and_resources_screen/cooking_screen.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 2]: ГОЛОВНИЙ КЛАС ЕКРАНУ (DatabasesAndResourcesScreen)
@@ -35,9 +37,26 @@ class DatabasesAndResourcesScreen extends StatelessWidget {
               // --------------------------------------------------------------
               _buildSectionTitle('Управління та Склад', Icons.handyman),
               const SizedBox(height: 12),
-              _buildPlaceholderTile('Інвентар (Наявні продукти)', Colors.green),
+
+              // Прив'язуємо перехід до екрану Інвентарю (Інвентарі)
+              _buildPlaceholderTile(
+                'Інвентар (Наявні продукти)',
+                Colors.green,
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const InventoryScreen()));
+                },
+              ),
+
               const SizedBox(height: 12),
-              _buildPlaceholderTile('Кухня (Готування страв)', Colors.orange),
+
+              // Ось тут правильний виклик для Кухні із параметром onTap всередині:
+              _buildPlaceholderTile(
+                'Кухня (Готування страв)',
+                Colors.orange,
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const CookingScreen()));
+                },
+              ),
 
               const SizedBox(height: 24),
 
