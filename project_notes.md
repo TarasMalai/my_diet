@@ -127,7 +127,6 @@ lib/
 │   ├── date_service.dart                                   # Глобальний сервіс дати (Singleton)
 │   ├── diet_settings_service.dart                          # Сервіс управління цільовими нормами нутрієнтів
 │   ├── diet_state_service.dart                             # Сервіс стану нутрієнтів
-│   ├── food_repository_service.dart                        # Модель даних продукту харчування з підтримкою категорій та виробника
 │   ├── mock_diet_repository_service.dart                   # Репозиторій даних (Mock)
 │   ├── navigation_service.dart                             # Сервіс навігації
 │   ├── nutrient_config_service.dart                        # Сервіс завантаження конфігурації
