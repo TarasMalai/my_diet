@@ -9,6 +9,7 @@ import 'package:my_diet/models/pantry_item_model.dart';
 import 'package:my_diet/models/product_model.dart';
 import 'package:my_diet/repositories/product_repository.dart';
 import 'package:my_diet/services/pantry_service.dart';
+import 'package:my_diet/widgets/common_widget/banner_widget/app_scaffold_widget.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -19,6 +20,22 @@ class InventoryScreen extends StatefulWidget {
 
 class _InventoryScreenState extends State<InventoryScreen> {
   final PantryService _pantryService = PantryService();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPantryData();
+  }
+
+  Future<void> _loadPantryData() async {
+    await _pantryService.loadItems();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   void _refresh() {
     setState(() {});
@@ -26,7 +43,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   /// Відкрити діалог вибору продукту з Головної бази для додавання в Інвентар
   void _showAddFromDatabaseDialog(BuildContext context) async {
-    // Завантажуємо продукти з головної бази
     List<ProductModel> products = [];
     try {
       products = await ProductRepository().loadProducts();
@@ -49,53 +65,71 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return AppScaffoldWidget(
+        appBar: AppBar(
+          title: const Text('Інвентар (Наявні продукти)'),
+          backgroundColor: Colors.teal.shade700,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator(color: Colors.teal)),
+      );
+    }
+
     final items = _pantryService.getItems();
 
-    return Scaffold(
+    return AppScaffoldWidget(
       appBar: AppBar(
         title: const Text('Інвентар (Наявні продукти)'),
         backgroundColor: Colors.teal.shade700,
         foregroundColor: Colors.white,
       ),
-      body: items.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.kitchen_outlined, size: 64, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  Text('Інвентар порожній', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Додайте продукти з бази, щоб відстежувати залишки',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                final item = items[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(
-                      'Залишок у хаті: ${item.weightInGram} г  |  ФА: ${item.phe.toStringAsFixed(1)} мг/100г',
+      body: Column(
+        children: [
+          Expanded(
+            child: items.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.kitchen_outlined, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text('Інвентар порожній', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Додайте продукти з бази, щоб відстежувати залишки',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      onPressed: () {
-                        _pantryService.removeItem(item.id);
-                        _refresh();
-                      },
-                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 90),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: ListTile(
+                          title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text(
+                            'Залишок у хаті: ${item.weightInGram} г  |  ФА: ${item.phe.toStringAsFixed(1)} мг/100г',
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.red),
+                            onPressed: () async {
+                              await _pantryService.removeItem(item.id);
+                              _refresh();
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddFromDatabaseDialog(context),
         backgroundColor: Colors.teal.shade700,
@@ -119,12 +153,10 @@ class _AddPantryItemDialog extends StatefulWidget {
 class _AddPantryItemDialogState extends State<_AddPantryItemDialog> {
   ProductModel? _selectedProduct;
   final _weightController = TextEditingController();
-  final _searchController = TextEditingController();
 
   @override
   void dispose() {
     _weightController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -137,7 +169,6 @@ class _AddPantryItemDialogState extends State<_AddPantryItemDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Пошук по продуктах
             Autocomplete<ProductModel>(
               displayStringForOption: (ProductModel option) => option.name,
               optionsBuilder: (TextEditingValue textEditingValue) {
@@ -185,7 +216,7 @@ class _AddPantryItemDialogState extends State<_AddPantryItemDialog> {
         ElevatedButton(
           onPressed: _selectedProduct == null
               ? null
-              : () {
+              : () async {
                   final weight = double.tryParse(_weightController.text.replaceAll(',', '.')) ?? 0.0;
                   if (weight > 0) {
                     final pantryItem = PantryItemModel(
@@ -209,9 +240,11 @@ class _AddPantryItemDialogState extends State<_AddPantryItemDialog> {
                       energy: _selectedProduct!.energy,
                     );
 
-                    PantryService().saveItem(pantryItem);
+                    await PantryService().saveItem(pantryItem);
                     widget.onItemAdded();
-                    Navigator.pop(context);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
           child: const Text('Зберегти в Інвентар'),

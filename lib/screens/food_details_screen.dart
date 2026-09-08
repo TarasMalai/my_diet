@@ -26,6 +26,7 @@ import 'package:my_diet/widgets/food_details_screen_widget/food_details_app_bar_
 import 'package:my_diet/widgets/common_widget/calendar_widget.dart';
 import 'package:my_diet/widgets/food_details_screen_widget/daily_summary_bar_widget.dart';
 import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget.dart';
+import 'package:my_diet/widgets/common_widget/banner_widget/app_scaffold_widget.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 2]: ГОЛОВНИЙ КЛАС ЕКРАНУ (FoodDetailsScreen)
@@ -82,9 +83,7 @@ class FoodDetailsScreen extends StatelessWidget {
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-
+    return AppScaffoldWidget(
       // ----------------------------------------------------------------------
       // [ВУЗОЛ 2.2.1]: ВЕРХНЯ ПАНЕЛЬ (APP BAR)
       // ----------------------------------------------------------------------
@@ -97,17 +96,28 @@ class FoodDetailsScreen extends StatelessWidget {
       ),
 
       // ----------------------------------------------------------------------
-      // [ВУЗОЛ 2.2.2]: ОСНОВНЕ ТІЛО З РЕАКТИВНОЮ ДАТОЮ ТА ДАНІ З МОЖЛИВІСТЮ ПЕРЕТЯГУВАННЯ
+      // [ВУЗОЛ 2.2.2]: ПЛАВАЮЧА КНОПКА ДОДАВАННЯ ПРИЙОМУ ЇЖІ (FloatingActionButton)
+      // ----------------------------------------------------------------------
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF006A50),
+        foregroundColor: Colors.white,
+        onPressed: () => _showAddMealDialog(context),
+        icon: const Icon(Icons.add),
+        label: const Text('Додати прийом їжі', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+
+      // ----------------------------------------------------------------------
+      // [ВУЗОЛ 2.2.3]: ОСНОВНЕ ТІЛО З РЕАКТИВНОЮ ДАТОЮ ТА ДАНІ З МОЖЛИВІСТЮ ПЕРЕТЯГУВАННЯ
       // ----------------------------------------------------------------------
       body: ValueListenableBuilder<DateTime>(
-        // [ВУЗОЛ 2.2.2.1: Реактивна підписка на дату]
+        // [ВУЗОЛ 2.2.3.1: Реактивна підписка на дату]
         // Оновлює весь вміст екрана при зміні поточної дати в DateService.
         valueListenable: DateService().selectedDate,
         builder: (context, currentDate, child) {
           return Column(
             children: [
               // --------------------------------------------------------------
-              // [ВУЗОЛ 2.2.2.2]: КАЛЕНДАР З ГЛОБАЛЬНИМ ОНОВЛЕННЯМ
+              // [ВУЗОЛ 2.2.3.2]: КАЛЕНДАР З ГЛОБАЛЬНИМ ОНОВЛЕННЯМ
               // --------------------------------------------------------------
               CalendarWidget(
                 selectedDate: currentDate,
@@ -117,7 +127,7 @@ class FoodDetailsScreen extends StatelessWidget {
               ),
 
               // --------------------------------------------------------------
-              // [ВУЗОЛ 2.2.2.3]: ПЛАШКА ПІДСУМКІВ ЗА ДЕНЬ
+              // [ВУЗОЛ 2.2.3.3]: ПЛАШКА ПІДСУМКІВ ЗА ДЕНЬ
               // --------------------------------------------------------------
               ValueListenableBuilder<int>(
                 // Реагує на оновлення MockDietRepository
@@ -128,7 +138,7 @@ class FoodDetailsScreen extends StatelessWidget {
               ),
 
               // --------------------------------------------------------------
-              // [ВУЗОЛ 2.2.2.4]: СПИСОК ПРИЙОМІВ ЇЖІ З ПЕРЕТЯГУВАННЯМ (REORDERABLE)
+              // [ВУЗОЛ 2.2.3.4]: СПИСОК ПРИЙОМІВ ЇЖІ З ПЕРЕТЯГУВАННЯМ (REORDERABLE)
               // --------------------------------------------------------------
               Expanded(
                 child: ValueListenableBuilder<int>(
@@ -142,7 +152,7 @@ class FoodDetailsScreen extends StatelessWidget {
                       );
                     }
 
-                    // [ВУЗОЛ 2.2.2.4.1: ReorderableListView]
+                    // [ВУЗОЛ 2.2.3.4.1: ReorderableListView]
                     // Спеціальний список, що дозволяє користувачеві змінювати порядок елементів
                     // за допомогою затискання та перетягування (Drag & Drop).
                     return ReorderableListView.builder(
@@ -156,7 +166,7 @@ class FoodDetailsScreen extends StatelessWidget {
                       },
                       itemBuilder: (context, index) {
                         final meal = meals[index];
-                        // [ВУЗОЛ 2.2.2.4.2: KeyedSubtree та ValueKey]
+                        // [ВУЗОЛ 2.2.3.4.2: KeyedSubtree та ValueKey]
                         // Обов'язковий унікальний ключ (ValueKey) для збереження стану віджетів
                         // при їх переміщенні в динамічному списку.
                         return KeyedSubtree(
@@ -175,32 +185,6 @@ class FoodDetailsScreen extends StatelessWidget {
             ],
           );
         },
-      ),
-
-      // ----------------------------------------------------------------------
-      // [ВУЗОЛ 2.2.3]: НИЖНЯ ПАНЕЛЬ З КНОПКОЮ ДОДАВАННЯ НОВОГО ПРИЙОМУ ЇЖІ
-      // ----------------------------------------------------------------------
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(12.0),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), offset: const Offset(0, -2), blurRadius: 4),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade600,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14.0),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-            ),
-            icon: const Icon(Icons.add_circle_outline),
-            label: const Text('Додати прийом їжі', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            onPressed: () => _showAddMealDialog(context),
-          ),
-        ),
       ),
     );
   }
