@@ -1,0 +1,27 @@
+Збереження скріншота з телефона
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" -s RZCW1024D4H shell screencap -p /sdcard/screen.png; & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" -s RZCW1024D4H pull /sdcard/screen.png screen_1.png
+
+
+# 1. Зупиняємо всі фонові процеси Gradle (часто саме вони заблоковують кеш)
+./android/gradlew --stop
+
+# 2. Очищаємо кеш Flutter
+flutter clean
+
+# 3. Підтягуємо залежності заново
+flutter pub get
+
+# 4. Переходимо в папку android і очищаємо кеш Gradle
+cd android
+./gradlew clean
+cd ..
+
+# 5. Запускаємо додаток із повним ребілдом
+flutter run -d RZCW1024D4H
+
+
+Після цього для повного перезапуску буде достатньо ввести в терміналі просто .\rebuild.bat.
+
+flutter clean
+flutter pub get
+flutter run -d RZCW1024D4H

@@ -1,18 +1,13 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: cooking_screen.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Екран кухні — збір інгредієнтів, розрахунок та збереження страви в Інвентар
+// ПРИЗНАЧЕННЯ: Головний екран процесу готування з можливістю завершення страв
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:my_diet/services/cooking_service.dart';
-import 'package:my_diet/widgets/databases_and_resources_widget/cooking_widgets/add_cooking_ingredient_dialog_widget.dart';
-import 'package:my_diet/widgets/databases_and_resources_widget/cooking_widgets/cooking_bottom_panel_widget.dart';
-import 'package:my_diet/widgets/databases_and_resources_widget/cooking_widgets/cooking_ingredients_list_widget.dart';
-import 'package:my_diet/widgets/databases_and_resources_widget/cooking_widgets/cooking_totals_header_widget.dart';
-import 'package:my_diet/models/cooking_history_model.dart';
-import 'package:my_diet/services/cooking_history_service.dart';
-import 'package:my_diet/models/food_item_model.dart';
+import 'package:my_diet/widgets/common_widget/banner_widget/app_scaffold_widget.dart';
+import 'package:my_diet/screens/databases_and_resources_screen/cooking_screen/cooking_detail_screen.dart';
 
 class CookingScreen extends StatefulWidget {
   const CookingScreen({super.key});
@@ -23,134 +18,157 @@ class CookingScreen extends StatefulWidget {
 
 class _CookingScreenState extends State<CookingScreen> {
   final CookingService _cookingService = CookingService();
-  final _dishNameController = TextEditingController();
-  final _finalWeightController = TextEditingController();
+  bool _isLoading = true;
 
   @override
-  void dispose() {
-    _dishNameController.dispose();
-    _finalWeightController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
-  /// Оновити стан екрана для перемальовування інтерфейсу
-  void _refresh() {
-    setState(() {});
+  Future<void> _loadData() async {
+    await _cookingService.init();
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
-  /// Відкрити діалог перегляду історії приготування з розгортанням інгредієнтів
-  void _openHistoryDialog(BuildContext context) {
+  void _refresh() => setState(() {});
+
+  Future<void> _createNewDishAndOpen() async {
+    final navigator = Navigator.of(context);
+    final newDish = await _cookingService.createNewDish();
+    if (!mounted) return;
+
+    await navigator.push(MaterialPageRoute(builder: (context) => CookingDetailScreen(dish: newDish)));
+
+    // Якщо зародили страву і нічого не додали — прибираємо з порожніх чернеток
+    if (newDish.ingredients.isEmpty && newDish.name.trim().isEmpty) {
+      await _cookingService.deleteActiveDish(newDish.id);
+    }
+
+    _refresh();
+  }
+
+  void _showArchiveDialog() {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final archivedDishes = _cookingService.archivedDishes;
             return AlertDialog(
-              title: const Text('Історія готування (за 10 днів)'),
+              title: const Text('Архів приготовлених страв (10 днів)'),
               content: SizedBox(
-                width: 600,
-                height: 500,
-                child: FutureBuilder<List<CookingHistoryModel>>(
-                  future: CookingHistoryService.loadHistory(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    final history = snapshot.data ?? [];
-                    if (history.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'Історія порожня\n(записи зберігаються до 10 днів)',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                      );
-                    }
-                    return ListView.builder(
-                      itemCount: history.length,
-                      itemBuilder: (context, index) {
-                        final record = history[index];
-                        final dateStr = '${record.cookedAt.day}.${record.cookedAt.month}.${record.cookedAt.year}';
-
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          child: ExpansionTile(
-                            title: Text(record.dishName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text('Вага: ${record.finalWeight} г  |  Дата: $dateStr'),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.red),
-                              tooltip: 'Видалити з історії',
-                              onPressed: () async {
-                                await CookingHistoryService.deleteRecipe(record.id);
-                                setDialogState(() {}); // Оновлюємо список у діалозі
-                              },
-                            ),
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Складові інгредієнти:',
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.orange),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    ...record.ingredients.map(
-                                      (ing) => Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 2),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Expanded(
-                                              child: Text('• ${ing.name}', style: const TextStyle(fontSize: 13)),
-                                            ),
-                                            Text(
-                                              '${ing.weight} г',
-                                              style: const TextStyle(color: Colors.grey, fontSize: 13),
-                                            ),
-                                          ],
+                width: double.maxFinite,
+                child: archivedDishes.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text('Архів порожній', textAlign: TextAlign.center),
+                      )
+                    : ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: archivedDishes.length,
+                        itemBuilder: (context, index) {
+                          final archivedDish = archivedDishes[index];
+                          return Card(
+                            elevation: 1.5,
+                            margin: const EdgeInsets.symmetric(vertical: 4.0),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            child: ExpansionTile(
+                              title: Text(
+                                archivedDish.name.isEmpty ? 'Без назви' : archivedDish.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(
+                                'Готово: ${archivedDish.archivedAt?.toLocal().toString().split('.').first ?? ''}\n'
+                                'ФА: ${archivedDish.totalPhe.toStringAsFixed(1)} мг | Чиста маса: ${archivedDish.netWeight.toStringAsFixed(0)} г',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                                tooltip: 'Видалити з архіву',
+                                onPressed: () async {
+                                  await _cookingService.deleteFromArchive(archivedDish.id);
+                                  setDialogState(() {});
+                                  _refresh();
+                                },
+                              ),
+                              children: [
+                                const Divider(height: 1),
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Інгредієнти:',
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      ...archivedDish.ingredients.map(
+                                        (ing) => Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Expanded(
+                                                child: Text('• ${ing.name}', style: const TextStyle(fontSize: 12)),
+                                              ),
+                                              Text(
+                                                '${ing.weight.toStringAsFixed(0)} г | ${ing.phe.toStringAsFixed(1)} мг ФА',
+                                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      child: OutlinedButton.icon(
-                                        icon: const Icon(Icons.refresh, size: 18),
-                                        label: const Text('Завантажити цей рецепт у котел'),
-                                        onPressed: () {
-                                          // Очищаємо поточний котел і завантажуємо інгредієнти з історії
-                                          _cookingService.ingredients.clear();
-                                          for (var ing in record.ingredients) {
-                                            _cookingService.addIngredient(ing);
-                                          }
-                                          _dishNameController.text = record.dishName;
-                                          _finalWeightController.text = record.finalWeight.toString();
-                                          _refresh();
-
-                                          Navigator.pop(context); // Закриваємо діалог історії
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(
-                                              content: Text('Рецепт "${record.dishName}" завантажено в котел!'),
-                                              backgroundColor: Colors.teal,
-                                            ),
-                                          );
-                                        },
+                                      if (archivedDish.notes.isNotEmpty) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Нотатки: ${archivedDish.notes}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 12),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          icon: const Icon(Icons.replay, size: 18),
+                                          label: const Text('Готувати знову'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.orange.shade800,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                          ),
+                                          onPressed: () async {
+                                            Navigator.pop(dialogContext);
+                                            final newDish = await _cookingService.cookAgain(archivedDish);
+                                            if (!context.mounted) return;
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => CookingDetailScreen(dish: newDish),
+                                              ),
+                                            );
+                                            _refresh();
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
               ),
-              actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Закрити'))],
+              actions: [TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Закрити'))],
             );
           },
         );
@@ -158,124 +176,121 @@ class _CookingScreenState extends State<CookingScreen> {
     );
   }
 
-  /// Відкрити діалогове вікно для вибору та додавання інгредієнта
-  void _openAddIngredientDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AddCookingIngredientDialogWidget(onAdded: () => _refresh());
-      },
-    );
-  }
-
-  /// Завершити готування, перевірити поля та зберегти готову страву в Інвентар
-  void _finishCooking() async {
-    final name = _dishNameController.text.trim();
-    final finalWeight = double.tryParse(_finalWeightController.text.replaceAll(',', '.')) ?? 0.0;
-
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Введіть назву готової страви!'), backgroundColor: Colors.red));
-      return;
-    }
-
-    if (finalWeight <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Введіть реальну фінальну вагу страви після приготування!'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Робимо копію інгредієнтів ДО того, як котел очиститься всередині сервісу
-    final currentIngredients = List<FoodItemModel>.from(_cookingService.ingredients);
-
-    final success = _cookingService.finishCookingAndSaveToPantry(name, finalWeight);
-
-    if (success) {
-      // Зберігаємо рецепт в історію з повною копією інгредієнтів
-      final historyRecord = CookingHistoryModel(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        dishName: name,
-        finalWeight: finalWeight,
-        ingredients: currentIngredients,
-        cookedAt: DateTime.now(),
-      );
-      await CookingHistoryService.saveRecipe(historyRecord);
-
-      // Безпечна перевірка після асинхронної операції
-      if (!mounted) return;
-
-      _dishNameController.clear();
-      _finalWeightController.clear();
-      _refresh();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Страву "$name" успішно збережено в Інвентар та в історію!'),
-          backgroundColor: Colors.teal,
-        ),
-      );
-    } else {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Додайте хоча б один інгредієнт до казана!'), backgroundColor: Colors.orange),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final ingredients = _cookingService.ingredients;
-    final totals = _cookingService.calculateTotals();
+    if (_isLoading) {
+      return AppScaffoldWidget(
+        appBar: AppBar(
+          title: const Text('Кухонний котел'),
+          backgroundColor: Colors.orange.shade800,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator(color: Colors.orange)),
+      );
+    }
 
-    return Scaffold(
+    final activeDishes = _cookingService.activeDishes;
+
+    return AppScaffoldWidget(
       appBar: AppBar(
-        title: const Text('Кухня (Готування страв)'),
+        title: const Text('Кухонний котел'),
         backgroundColor: Colors.orange.shade800,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
-            tooltip: 'Історія приготування',
-            onPressed: () => _openHistoryDialog(context),
+            icon: const Icon(Icons.inventory_2_outlined),
+            tooltip: 'Архів страв (10 днів)',
+            onPressed: _showArchiveDialog,
           ),
         ],
       ),
       body: Column(
         children: [
-          // Верхня панель загальних підсумків
-          CookingTotalsHeaderWidget(totals: totals),
-          const Divider(height: 1),
-
-          // Список доданих інгредієнтів
           Expanded(
-            child: CookingIngredientsListWidget(
-              ingredients: ingredients,
-              onDelete: (id) {
-                _cookingService.removeIngredient(id);
-                _refresh();
-              },
+            child: activeDishes.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.soup_kitchen_outlined, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text('Немає страв у процесі', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: activeDishes.length,
+                    itemBuilder: (context, index) {
+                      final dish = activeDishes[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          // ЗЛІВА: Клікабельна кнопка-холодильник «Завершити та в інвентар»
+                          leading: InkWell(
+                            borderRadius: BorderRadius.circular(20),
+                            onTap: () async {
+                              await _cookingService.finishCooking(dish);
+                              _refresh();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.green.shade300, width: 1.5),
+                              ),
+                              child: Icon(Icons.kitchen, color: Colors.green.shade700, size: 24),
+                            ),
+                          ),
+                          title: Text(
+                            dish.name.trim().isEmpty ? 'Нова страва' : dish.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            'Інгредієнтів: ${dish.ingredients.length}  |  Готова маса: ${dish.netWeight.toStringAsFixed(0)} г\n'
+                            'ФА: ${dish.totalPhe.toStringAsFixed(1)} мг  |  Ккал: ${dish.totalCalories.toStringAsFixed(1)}',
+                          ),
+                          // СПРАВА: Тільки кошик для видалення чернетки
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete_outline, color: Colors.red.shade400),
+                            tooltip: 'Видалити чернетку',
+                            onPressed: () async {
+                              await _cookingService.deleteActiveDish(dish.id);
+                              _refresh();
+                            },
+                          ),
+                          onTap: () async {
+                            final navigator = Navigator.of(context);
+                            await navigator.push(
+                              MaterialPageRoute(builder: (context) => CookingDetailScreen(dish: dish)),
+                            );
+                            _refresh();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                onPressed: _createNewDishAndOpen,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange.shade800,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                ),
+                icon: const Icon(Icons.add),
+                label: const Text('Готувати нову страву', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
             ),
           ),
-
-          // Нижня панель введення назви, ваги та збереження
-          CookingBottomPanelWidget(
-            nameController: _dishNameController,
-            finalWeightController: _finalWeightController,
-            onFinishCooking: _finishCooking,
-          ),
         ],
-      ),
-      // Плаваюча кнопка для додавання нового інгредієнта
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _openAddIngredientDialog(context),
-        backgroundColor: Colors.orange.shade800,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Додати інгредієнт', style: TextStyle(color: Colors.white)),
       ),
     );
   }

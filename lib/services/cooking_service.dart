@@ -1,134 +1,165 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: cooking_service.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Сервіс тимчасового збору інгредієнтів для готування страв
+// ПРИЗНАЧЕННЯ: Сервіс керування процесом готування (активні чернетки),
+//              збереженням рецептів у архів та фіксації в інвентар (10 днів)
 // ============================================================================
 
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_diet/models/cooking_dish_model.dart';
 import 'package:my_diet/models/food_item_model.dart';
-import 'package:my_diet/models/pantry_item_model.dart';
-import 'package:my_diet/services/pantry_service.dart';
 
 class CookingService {
   static final CookingService _instance = CookingService._internal();
   factory CookingService() => _instance;
   CookingService._internal();
 
-  // Тимчасовий список інгредієнтів майбутньої страви
-  final List<FoodItemModel> _ingredients = [];
+  static const String _activeDishesKey = 'active_cooking_dishes';
+  static const String _archivedDishesKey = 'archived_cooking_dishes';
 
-  List<FoodItemModel> get ingredients => List.unmodifiable(_ingredients);
+  List<CookingDishModel> activeDishes = [];
+  List<CookingDishModel> archivedDishes = [];
 
-  /// Додати інгредієнт до майбутньої страви
-  void addIngredient(FoodItemModel item) {
-    _ingredients.add(item);
-  }
+  /// Ініціалізація при старті додатка
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
 
-  /// Видалити інгредієнт зі списку
-  void removeIngredient(String id) {
-    _ingredients.removeWhere((item) => item.id == id);
-  }
-
-  /// Очистити котел (повернути все до нуля)
-  void clear() {
-    _ingredients.clear();
-  }
-
-  /// Підрахунок сумарних нутрієнтів та сирої маси всіх інгредієнтів разом
-  Map<String, double> calculateTotals() {
-    double totalWeight = 0;
-    double totalPhe = 0;
-    double totalCalories = 0;
-    double totalProtein = 0;
-    double totalCarbs = 0;
-    double totalFat = 0;
-    double totalLeucine = 0;
-    double totalTyrosine = 0;
-    double totalMethionine = 0;
-    double totalLysine = 0;
-    double totalFiber = 0;
-    double totalSalt = 0;
-    double totalSugar = 0;
-    double totalWater = 0;
-    double totalEnergy = 0;
-
-    for (var item in _ingredients) {
-      totalWeight += item.weight;
-      totalPhe += item.phe;
-      totalCalories += item.calories;
-      totalProtein += item.protein;
-      totalCarbs += item.carbs;
-      totalFat += item.fat;
-      totalLeucine += item.leucine;
-      totalTyrosine += item.tyrosine;
-      totalMethionine += item.methionine;
-      totalLysine += item.lysine;
-      totalFiber += item.fiber;
-      totalSalt += item.salt;
-      totalSugar += item.sugar;
-      totalWater += item.water;
-      totalEnergy += item.energy;
+    final activeJson = prefs.getString(_activeDishesKey);
+    if (activeJson != null) {
+      final List decoded = jsonDecode(activeJson);
+      activeDishes = decoded.map((e) => CookingDishModel.fromJson(e)).toList();
     }
 
-    return {
-      'weight': totalWeight,
-      'phe': totalPhe,
-      'calories': totalCalories,
-      'protein': totalProtein,
-      'carbs': totalCarbs,
-      'fat': totalFat,
-      'leucine': totalLeucine,
-      'tyrosine': totalTyrosine,
-      'methionine': totalMethionine,
-      'lysine': totalLysine,
-      'fiber': totalFiber,
-      'salt': totalSalt,
-      'sugar': totalSugar,
-      'water': totalWater,
-      'energy': totalEnergy,
-    };
-  }
-
-  /// Фінальне приготування та збереження страви в Інвентар (Комору)
-  /// [dishName] - назва готової страви (наприклад, "Суп овочевий")
-  /// [finalWeight] - маса страви після варіння/приготування (грам)
-  bool finishCookingAndSaveToPantry(String dishName, double finalWeight) {
-    if (_ingredients.isEmpty || finalWeight <= 0) return false;
-
-    final totals = calculateTotals();
-
-    // Коефіцієнт перерахунку на 100 грам ГОТОВОЇ страви
-    // Формула: (Сумарна кількість речовини на весь казан / фінальну вагу казана) * 100
-    double getPer100g(double totalValue) {
-      return (totalValue / finalWeight) * 100;
+    final archiveJson = prefs.getString(_archivedDishesKey);
+    if (archiveJson != null) {
+      final List decoded = jsonDecode(archiveJson);
+      archivedDishes = decoded.map((e) => CookingDishModel.fromJson(e)).toList();
     }
 
-    final pantryItem = PantryItemModel(
+    await _cleanOldArchive();
+  }
+
+  /// Збереження станів у локальну пам'ять
+  Future<void> _saveData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_activeDishesKey, jsonEncode(activeDishes.map((e) => e.toJson()).toList()));
+    await prefs.setString(_archivedDishesKey, jsonEncode(archivedDishes.map((e) => e.toJson()).toList()));
+  }
+
+  /// Створення нової чернетки готування
+  Future<CookingDishModel> createNewDish() async {
+    final newDish = CookingDishModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      productId: '',
-      name: dishName,
-      weightInGram: finalWeight, // Скільки всього готової страви вийшло
-      isRecipe: true, // Позначаємо, що це заготовлена страва
-      phe: getPer100g(totals['phe']!),
-      calories: getPer100g(totals['calories']!),
-      protein: getPer100g(totals['protein']!),
-      carbs: getPer100g(totals['carbs']!),
-      fat: getPer100g(totals['fat']!),
-      leucine: getPer100g(totals['leucine']!),
-      tyrosine: getPer100g(totals['tyrosine']!),
-      methionine: getPer100g(totals['methionine']!),
-      lysine: getPer100g(totals['lysine']!),
-      fiber: getPer100g(totals['fiber']!),
-      salt: getPer100g(totals['salt']!),
-      sugar: getPer100g(totals['sugar']!),
-      water: getPer100g(totals['water']!),
-      energy: getPer100g(totals['energy']!),
+      name: '',
+      ingredients: [],
+      createdAt: DateTime.now(),
     );
 
-    // Зберігаємо страву одразу в Інвентар!
-    PantryService().saveItem(pantryItem);
+    activeDishes.add(newDish);
+    await _saveData();
+    return newDish;
+  }
 
-    // Очищаємо котел після готування
-    clear();
-    return true;
+  /// Автоматичне збереження будь-яких правок під час готування
+  Future<void> updateDish(CookingDishModel updatedDish) async {
+    final index = activeDishes.indexWhere((d) => d.id == updatedDish.id);
+    if (index != -1) {
+      activeDishes[index] = updatedDish;
+      await _saveData();
+    }
+  }
+
+  /// Видалення чернетки (без збереження в архів)
+  Future<void> deleteActiveDish(String id) async {
+    activeDishes.removeWhere((d) => d.id == id);
+    await _saveData();
+  }
+
+  // ============================================================================
+  // [ВУЗОЛ 1]: Натискання кнопки «В Рецепти» в деталях страви
+  // Зберігає/оновлює копію в Архіві, але залишає страву в активному готуванні
+  // ============================================================================
+  Future<void> saveToMyRecipes(CookingDishModel dish) async {
+    dish.archivedAt = DateTime.now();
+    dish.isArchived = true;
+
+    final archiveIndex = archivedDishes.indexWhere((d) => d.id == dish.id);
+    if (archiveIndex != -1) {
+      archivedDishes[archiveIndex] = dish;
+    } else {
+      archivedDishes.insert(0, dish);
+    }
+
+    await updateDish(dish); // Зберігаємо також і активні правки
+  }
+
+  // ============================================================================
+  // [ВУЗОЛ 2]: Натискання кнопки «ГОТОВО» (зелена галочка)
+  // Відправляє в інвентар + архів та ПРИБИРАЄ з екрана активного готування
+  // ============================================================================
+  Future<void> finishCooking(CookingDishModel dish) async {
+    dish.archivedAt = DateTime.now();
+    dish.isArchived = true;
+
+    // 1. Копіюємо/оновлюємо в архіві
+    final archiveIndex = archivedDishes.indexWhere((d) => d.id == dish.id);
+    if (archiveIndex != -1) {
+      archivedDishes[archiveIndex] = dish;
+    } else {
+      archivedDishes.insert(0, dish);
+    }
+
+    // 2. TODO: Передаємо в Інвентар готову страву
+    // InventoryService().addDish(dish);
+
+    // 3. Видаляємо з активних чернеток
+    activeDishes.removeWhere((d) => d.id == dish.id);
+
+    await _saveData();
+  }
+
+  /// Видалення страви з Архіву за її ID
+  Future<void> deleteFromArchive(String id) async {
+    archivedDishes.removeWhere((d) => d.id == id);
+    await _saveData();
+  }
+
+  /// Запуск повторного готування рецепта з Архіву (створення копії в активні)
+  Future<CookingDishModel> cookAgain(CookingDishModel archDish) async {
+    final clonedIngredients = archDish.ingredients.map((item) {
+      return FoodItemModel.fromJson(item.toJson());
+    }).toList();
+
+    final newDish = CookingDishModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: archDish.name,
+      ingredients: clonedIngredients,
+      tareWeight: archDish.tareWeight,
+      finalGrossWeight: archDish.finalGrossWeight,
+      useTare: archDish.useTare,
+      notes: archDish.notes,
+      createdAt: DateTime.now(),
+      isArchived: false,
+    );
+
+    activeDishes.add(newDish);
+    await _saveData();
+    return newDish;
+  }
+
+  /// Авто-очищення архіву (понад 10 днів)
+  Future<void> _cleanOldArchive() async {
+    final now = DateTime.now();
+    final initialLength = archivedDishes.length;
+
+    archivedDishes.removeWhere((dish) {
+      final archiveTime = dish.archivedAt ?? dish.createdAt;
+      return now.difference(archiveTime).inDays >= 10;
+    });
+
+    if (archivedDishes.length != initialLength) {
+      await _saveData();
+    }
   }
 }

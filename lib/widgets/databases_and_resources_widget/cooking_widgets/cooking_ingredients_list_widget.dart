@@ -1,7 +1,7 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: cooking_ingredients_list_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Віджет списку доданих інгредієнтів у казані або порожнього стану
+// ПРИЗНАЧЕННЯ: Віджет списку доданих інгредієнтів у страві або порожнього стану
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -15,7 +15,6 @@ class CookingIngredientsListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Якщо інгредієнтів немає — показуємо стильну заглушку
     if (ingredients.isEmpty) {
       return Center(
         child: Column(
@@ -23,21 +22,20 @@ class CookingIngredientsListWidget extends StatelessWidget {
           children: [
             Icon(Icons.soup_kitchen_outlined, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
-            Text('Кухонний котел порожній', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+            Text('Ця страва ще порожня', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
             const SizedBox(height: 8),
-            const Text('Додайте інгредієнти, щоб почати готування', style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const Text('Додайте інгредієнти нижче', style: TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
       );
     }
 
-    // Якщо список не порожній — відображаємо картки інгредієнтів
     return ListView.builder(
       itemCount: ingredients.length,
       itemBuilder: (context, index) {
         final item = ingredients[index];
         return Card(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: ListTile(
             title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.bold)),
             subtitle: Text('Вага: ${item.weight} г  |  ФА: ${item.phe.toStringAsFixed(1)} мг'),

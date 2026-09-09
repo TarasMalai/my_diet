@@ -2,19 +2,17 @@
 // НАЗВА ФАЙЛУ: add_cooking_ingredient_dialog_widget.dart
 // ПРОЄКТ: Моя дієта
 // ПРИЗНАЧЕННЯ: Діалогове вікно пошуку продукту з бази та вказівки ваги
-//              для додавання інгредієнта в кухонний котел (з покращеним пошуком та пріоритетом)
 // ============================================================================
 
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/food_item_model.dart';
 import 'package:my_diet/models/product_model.dart';
 import 'package:my_diet/repositories/product_repository.dart';
-import 'package:my_diet/services/cooking_service.dart';
 
 class AddCookingIngredientDialogWidget extends StatefulWidget {
-  final VoidCallback onAdded;
+  final Function(FoodItemModel) onIngredientAdded;
 
-  const AddCookingIngredientDialogWidget({super.key, required this.onAdded});
+  const AddCookingIngredientDialogWidget({super.key, required this.onIngredientAdded});
 
   @override
   State<AddCookingIngredientDialogWidget> createState() => _AddCookingIngredientDialogWidgetState();
@@ -34,7 +32,6 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
     _weightController.addListener(_updateState);
   }
 
-  /// Асинхронне завантаження продуктів із загальної бази
   Future<void> _loadProducts() async {
     try {
       final products = await ProductRepository().loadProducts();
@@ -66,7 +63,6 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
 
   @override
   Widget build(BuildContext context) {
-    // Знаходимо продукт або за точним вибором, або намагаємося співставити за текстом з поля пошуку
     ProductModel? activeProduct = _selectedProduct;
     if (activeProduct == null && _searchController.text.isNotEmpty) {
       final match = _allProducts.where((p) => p.name.toLowerCase() == _searchController.text.trim().toLowerCase());
@@ -79,7 +75,7 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
     final bool canAdd = activeProduct != null && weight > 0;
 
     return AlertDialog(
-      title: const Text('Додати інгредієнт у котел'),
+      title: const Text('Додати інгредієнт'),
       content: SizedBox(
         width: 400,
         child: _isLoading
@@ -87,7 +83,6 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Віджет автодоповнення для пошуку продукту з пріоритетом на початок рядка
                   Autocomplete<ProductModel>(
                     displayStringForOption: (ProductModel option) => option.name,
                     optionsBuilder: (TextEditingValue textEditingValue) {
@@ -95,14 +90,10 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
                         return const Iterable<ProductModel>.empty();
                       }
                       final query = textEditingValue.text.toLowerCase();
-
-                      // Спочатку ті, що починаються з введеного запиту
                       final startsWithQuery = _allProducts.where((p) => p.name.toLowerCase().startsWith(query));
-                      // Потім ті, що просто містять в собі рядок
                       final containsQuery = _allProducts.where(
                         (p) => p.name.toLowerCase().contains(query) && !p.name.toLowerCase().startsWith(query),
                       );
-
                       return [...startsWithQuery, ...containsQuery];
                     },
                     onSelected: (ProductModel selection) {
@@ -112,7 +103,6 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
                       });
                     },
                     fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                      // Синхронізуємо локальний контролер пошуку
                       if (_searchController.text != controller.text && controller.text.isNotEmpty) {
                         _searchController.text = controller.text;
                       }
@@ -122,7 +112,6 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
                         onChanged: (val) {
                           setState(() {
                             _searchController.text = val;
-                            // Якщо користувач змінив текст вручну — скидаємо чіткий вибір, щоб перевірити збіг заново
                             if (_selectedProduct != null && _selectedProduct!.name != val) {
                               _selectedProduct = null;
                             }
@@ -136,8 +125,6 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
                     },
                   ),
                   const SizedBox(height: 16),
-
-                  // Поле для введення ваги завжди доступне, якщо введено назву
                   TextField(
                     controller: _weightController,
                     keyboardType: TextInputType.number,
@@ -182,12 +169,11 @@ class _AddCookingIngredientDialogWidgetState extends State<AddCookingIngredientD
                     energy: (activeProduct.energy * weight) / 100,
                   );
 
-                  CookingService().addIngredient(foodItem);
-                  widget.onAdded();
+                  widget.onIngredientAdded(foodItem);
                   Navigator.pop(context);
                 },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.orange.shade800, foregroundColor: Colors.white),
-          child: const Text('Додати в котел'),
+          child: const Text('Додати'),
         ),
       ],
     );
