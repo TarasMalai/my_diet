@@ -26,6 +26,19 @@ class _CookingScreenState extends State<CookingScreen> {
     _loadData();
   }
 
+  String _getIngredientsPreview(List<dynamic> ingredients) {
+    if (ingredients.isEmpty) return 'Без інгредієнтів';
+
+    final names = ingredients.map((ing) => ing.name.toString()).where((n) => n.isNotEmpty).toList();
+    if (names.isEmpty) return 'Без інгредієнтів';
+
+    if (names.length <= 3) {
+      return names.join(', ');
+    } else {
+      return '${names.take(3).join(', ')} (+ще ${names.length - 3})';
+    }
+  }
+
   Future<void> _loadData() async {
     await _cookingService.init();
     if (mounted) {
@@ -81,8 +94,8 @@ class _CookingScreenState extends State<CookingScreen> {
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                               subtitle: Text(
-                                'Готово: ${archivedDish.archivedAt?.toLocal().toString().split('.').first ?? ''}\n'
-                                'ФА: ${archivedDish.totalPhe.toStringAsFixed(1)} мг | Чиста маса: ${archivedDish.netWeight.toStringAsFixed(0)} г',
+                                'Склад: ${_getIngredientsPreview(archivedDish.ingredients)}\n'
+                                'Маса: ${archivedDish.netWeight.toStringAsFixed(0)} г  |  ФА: ${archivedDish.totalPhe.toStringAsFixed(1)} мг  |  Ккал: ${archivedDish.totalCalories.toStringAsFixed(0)}',
                                 style: const TextStyle(fontSize: 12),
                               ),
                               trailing: IconButton(
@@ -249,8 +262,9 @@ class _CookingScreenState extends State<CookingScreen> {
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
-                            'Інгредієнтів: ${dish.ingredients.length}  |  Готова маса: ${dish.netWeight.toStringAsFixed(0)} г\n'
-                            'ФА: ${dish.totalPhe.toStringAsFixed(1)} мг  |  Ккал: ${dish.totalCalories.toStringAsFixed(1)}',
+                            'Склад: ${_getIngredientsPreview(dish.ingredients)}\n'
+                            'Маса: ${dish.netWeight.toStringAsFixed(0)} г  |  ФА: ${dish.totalPhe.toStringAsFixed(1)} мг  |  Ккал: ${dish.totalCalories.toStringAsFixed(0)}',
+                            style: const TextStyle(fontSize: 12),
                           ),
                           // СПРАВА: Тільки кошик для видалення чернетки
                           trailing: IconButton(
@@ -283,7 +297,7 @@ class _CookingScreenState extends State<CookingScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange.shade800,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), // або 24, як було
                 ),
                 icon: const Icon(Icons.add),
                 label: const Text('Готувати нову страву', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),

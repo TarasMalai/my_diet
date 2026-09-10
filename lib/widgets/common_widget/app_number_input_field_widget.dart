@@ -14,6 +14,8 @@ class AppNumberInputFieldWidget extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String? hintText;
+  final String? errorText;
+  final FormFieldValidator<String>? validator; // Додано параметр
   final TextInputAction textInputAction;
   final ValueChanged<String>? onChanged;
 
@@ -22,6 +24,8 @@ class AppNumberInputFieldWidget extends StatelessWidget {
     required this.controller,
     required this.label,
     this.hintText,
+    this.errorText,
+    this.validator, // Додано в конструктор
     this.textInputAction = TextInputAction.next,
     this.onChanged,
   });
@@ -48,9 +52,11 @@ class AppNumberInputFieldWidget extends StatelessWidget {
         textInputAction: textInputAction,
         onTap: _selectAllText,
         onChanged: onChanged,
+        validator: validator, // Прокидаємо валідатор
         decoration: InputDecoration(
           labelText: label,
           hintText: hintText,
+          errorText: errorText,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
           contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         ),

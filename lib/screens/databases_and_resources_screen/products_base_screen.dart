@@ -14,6 +14,7 @@ import 'package:my_diet/widgets/databases_and_resources_widget/products_base_wid
 import 'package:my_diet/widgets/databases_and_resources_widget/products_base_widget/product_edit_dialog_widget.dart';
 import 'package:my_diet/widgets/databases_and_resources_widget/products_base_widget/product_search_bar_widget.dart';
 import 'package:my_diet/widgets/common_widget/banner_widget/app_scaffold_widget.dart';
+import 'package:my_diet/utils/product_search_helper_utils.dart';
 
 class ProductsBaseScreen extends StatefulWidget {
   const ProductsBaseScreen({super.key});
@@ -57,40 +58,11 @@ class _ProductsBaseScreenState extends State<ProductsBaseScreen> {
 
   /// [ВУЗОЛ 2]: Фільтрація та сортування продуктів за пошуковим запитом
   void _filterProducts() {
-    final query = _searchController.text.trim().toLowerCase();
-
-    if (query.isEmpty) {
-      setState(() {
-        _filteredProducts = List.from(_allProducts);
-      });
-      return;
-    }
-
-    final matches = _allProducts.where((p) {
-      final nameMatches = p.name.toLowerCase().contains(query);
-      final categoryMatches = p.category.toLowerCase().contains(query);
-      return nameMatches || categoryMatches;
-    }).toList();
-
-    matches.sort((a, b) {
-      final aName = a.name.toLowerCase();
-      final bName = b.name.toLowerCase();
-
-      final aExact = aName == query;
-      final bExact = bName == query;
-      if (aExact && !bExact) return -1;
-      if (!aExact && bExact) return 1;
-
-      final aStarts = aName.startsWith(query);
-      final bStarts = bName.startsWith(query);
-      if (aStarts && !bStarts) return -1;
-      if (!aStarts && bStarts) return 1;
-
-      return aName.compareTo(bName);
-    });
+    final queryText = _searchController.text;
+    final sortedAndFiltered = ProductSearchHelper.filterAndSort(_allProducts, queryText);
 
     setState(() {
-      _filteredProducts = matches;
+      _filteredProducts = sortedAndFiltered;
     });
   }
 

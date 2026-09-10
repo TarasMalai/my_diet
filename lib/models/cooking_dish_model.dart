@@ -2,7 +2,7 @@
 // НАЗВА ФАЙЛУ: cooking_dish_model.dart
 // ПРОЄКТ: Моя дієта
 // ПРИЗНАЧЕННЯ: Модель даних для страви в процесі приготування з розрахунком
-//              готової маси, нутрієнтів на 100г та фіксацією дати архівації
+//              готової маси, всіх 13 нутрієнтів на 100г та фіксацією 10 днів
 // ============================================================================
 
 import 'package:my_diet/models/food_item_model.dart';
@@ -44,14 +44,29 @@ class CookingDishModel {
   }
 
   // ==========================================================================
-  // [ВУЗОЛ 2]: Загальні сирі показники інгредієнтів
+  // [ВУЗОЛ 2]: Загальні сирі показники інгредієнтів (усі 13 нутрієнтів)
   // ==========================================================================
   double get totalRawWeight => ingredients.fold(0.0, (sum, item) => sum + item.weight);
+
+  // Основні нутрієнти & КБЖВ
   double get totalPhe => ingredients.fold(0.0, (sum, item) => sum + item.phe);
   double get totalCalories => ingredients.fold(0.0, (sum, item) => sum + item.calories);
   double get totalProtein => ingredients.fold(0.0, (sum, item) => sum + item.protein);
   double get totalFat => ingredients.fold(0.0, (sum, item) => sum + item.fat);
   double get totalCarbs => ingredients.fold(0.0, (sum, item) => sum + item.carbs);
+
+  // Амінокислоти
+  double get totalLeucine => ingredients.fold(0.0, (sum, item) => sum + item.leucine);
+  double get totalTyrosine => ingredients.fold(0.0, (sum, item) => sum + item.tyrosine);
+  double get totalMethionine => ingredients.fold(0.0, (sum, item) => sum + item.methionine);
+  double get totalLysine => ingredients.fold(0.0, (sum, item) => sum + item.lysine);
+
+  // Додаткові показники
+  double get totalFiber => ingredients.fold(0.0, (sum, item) => sum + item.fiber);
+  double get totalSalt => ingredients.fold(0.0, (sum, item) => sum + item.salt);
+  double get totalSugar => ingredients.fold(0.0, (sum, item) => sum + item.sugar);
+  double get totalWater => ingredients.fold(0.0, (sum, item) => sum + item.water);
+  double get totalEnergy => ingredients.fold(0.0, (sum, item) => sum + item.energy);
 
   // ==========================================================================
   // [ВУЗОЛ 3]: Показники на 100г готової страви
@@ -61,6 +76,17 @@ class CookingDishModel {
   double get proteinPer100g => netWeight > 0 ? (totalProtein / netWeight) * 100 : 0.0;
   double get fatPer100g => netWeight > 0 ? (totalFat / netWeight) * 100 : 0.0;
   double get carbsPer100g => netWeight > 0 ? (totalCarbs / netWeight) * 100 : 0.0;
+
+  double get leucinePer100g => netWeight > 0 ? (totalLeucine / netWeight) * 100 : 0.0;
+  double get tyrosinePer100g => netWeight > 0 ? (totalTyrosine / netWeight) * 100 : 0.0;
+  double get methioninePer100g => netWeight > 0 ? (totalMethionine / netWeight) * 100 : 0.0;
+  double get lysinePer100g => netWeight > 0 ? (totalLysine / netWeight) * 100 : 0.0;
+
+  double get fiberPer100g => netWeight > 0 ? (totalFiber / netWeight) * 100 : 0.0;
+  double get saltPer100g => netWeight > 0 ? (totalSalt / netWeight) * 100 : 0.0;
+  double get sugarPer100g => netWeight > 0 ? (totalSugar / netWeight) * 100 : 0.0;
+  double get waterPer100g => netWeight > 0 ? (totalWater / netWeight) * 100 : 0.0;
+  double get energyPer100g => netWeight > 0 ? (totalEnergy / netWeight) * 100 : 0.0;
 
   Map<String, dynamic> toJson() => {
     'id': id,

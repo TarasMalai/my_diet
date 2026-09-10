@@ -77,11 +77,27 @@ class PantryService {
     }
   }
 
-  /// Пошук продукту в інвентарі за ID або назвою
-  PantryItemModel? findItem(String query) {
+  /// Пошук продукту в інвентарі за productId, ID елемента або назвою
+  PantryItemModel? findItem(String query, {String? productId}) {
     final lowerQuery = query.toLowerCase().trim();
+
     try {
-      return _pantryItems.firstWhere((item) => item.id == lowerQuery || item.name.toLowerCase() == lowerQuery);
+      // 1. Спочатку шукаємо за прямим productId (найточніший збіг)
+      if (productId != null && productId.isNotEmpty) {
+        final byProductId = _pantryItems.where((item) => item.productId == productId).firstOrNull;
+        if (byProductId != null) return byProductId;
+      }
+
+      // 2. Якщо за productId не знайшли, шукаємо за ID самого елемента або точною назвою
+      final byIdOrName = _pantryItems
+          .where((item) => item.id.toLowerCase() == lowerQuery || item.name.toLowerCase() == lowerQuery)
+          .firstOrNull;
+      if (byIdOrName != null) return byIdOrName;
+
+      // 3. М'який пошук: якщо назва в інвентарі містить запит або навпаки
+      return _pantryItems
+          .where((item) => item.name.toLowerCase().contains(lowerQuery) || lowerQuery.contains(item.name.toLowerCase()))
+          .firstOrNull;
     } catch (_) {
       return null;
     }

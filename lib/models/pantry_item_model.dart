@@ -4,6 +4,8 @@
 // ПРИЗНАЧЕННЯ: Модель даних для продуктів у Інвентарі та збережених страв
 // ============================================================================
 
+import 'package:my_diet/models/food_item_model.dart';
+
 class PantryItemModel {
   final String id;
   final String productId; // Посилання на глобальний продукт (якщо є)
@@ -29,6 +31,10 @@ class PantryItemModel {
   final bool isRecipe; // Прапорець: чи це заготовлена страва/рецепт
   final DateTime updatedAt;
 
+  // Поле для зберігання списку інгредієнтів (для готових страв)
+  final List<FoodItemModel>? ingredients;
+  final String? ingredientsSummary; // Короткий текстовий опис складу
+
   PantryItemModel({
     required this.id,
     required this.productId,
@@ -50,6 +56,8 @@ class PantryItemModel {
     this.energy = 0.0,
     this.isRecipe = false,
     DateTime? updatedAt,
+    this.ingredients,
+    this.ingredientsSummary,
   }) : updatedAt = updatedAt ?? DateTime.now();
 
   // Конвертація в Map для зберігання (наприклад, у локальній базі чи JSON)
@@ -75,6 +83,8 @@ class PantryItemModel {
       'energy': energy,
       'isRecipe': isRecipe ? 1 : 0,
       'updatedAt': updatedAt.toIso8601String(),
+      'ingredients': ingredients?.map((i) => i.toJson()).toList(),
+      'ingredientsSummary': ingredientsSummary ?? ingredients?.map((i) => i.name).join(', '),
     };
   }
 
@@ -101,6 +111,10 @@ class PantryItemModel {
       energy: (map['energy'] ?? 0.0).toDouble(),
       isRecipe: map['isRecipe'] == 1 || map['isRecipe'] == true,
       updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt']) : DateTime.now(),
+      ingredients: map['ingredients'] != null
+          ? (map['ingredients'] as List).map((i) => FoodItemModel.fromJson(Map<String, dynamic>.from(i))).toList()
+          : null,
+      ingredientsSummary: map['ingredientsSummary'],
     );
   }
 }

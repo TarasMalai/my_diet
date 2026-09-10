@@ -70,6 +70,7 @@ class _CookingDetailScreenState extends State<CookingDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AddCookingIngredientDialogWidget(
+        currentDishName: widget.dish.name, // Передаємо назву страви "Суп"
         onIngredientAdded: (FoodItemModel item) {
           setState(() {
             widget.dish.ingredients.add(item);
