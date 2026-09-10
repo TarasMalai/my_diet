@@ -23,6 +23,7 @@ import 'package:my_diet/widgets/common_widget/calendar_widget.dart';
 import 'package:my_diet/widgets/main_screen_widget/family_notes_widget.dart';
 import 'package:my_diet/widgets/main_screen_widget/databases_navigation_tile_widget.dart';
 import 'package:my_diet/widgets/common_widget/banner_widget/app_scaffold_widget.dart';
+import 'package:my_diet/services/pantry_service.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 2]: ГОЛОВНИЙ КЛАС ЕКРАНУ (MainScreen)
@@ -40,11 +41,19 @@ class MainScreen extends StatefulWidget {
 // [ВУЗОЛ 2.1]: СТАН ЕКРАНУ (_MainScreenState)
 // ----------------------------------------------------------------------------
 class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Автоматично завантажуємо інвентар при запуску головного екрана
+    PantryService().loadItems();
+  }
+
   // --------------------------------------------------------------------------
   // [ВУЗОЛ 2.1.1]: ВІЗУАЛЬНИЙ КАРКАС ЕКРАНУ (BUILD)
   // --------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
+    // ... решта вашого коду без змін
     // Використовуємо наш єдиний AppScaffold замість стандартного Scaffold
     return AppScaffoldWidget(
       // ----------------------------------------------------------------------
