@@ -32,7 +32,7 @@ class SummaryNutrientTileWidget extends StatelessWidget {
         : '';
 
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(12),
@@ -58,36 +58,9 @@ class SummaryNutrientTileWidget extends StatelessWidget {
             ],
           ),
 
-          // [2] Блок додаткових амінокислот всередині плитки Фенілаланіну
-          if (item.aminoMap != null)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildAminoLabel('Leu', item.aminoMap!['Leu']!),
-                      const SizedBox(height: 2),
-                      _buildAminoLabel('Met', item.aminoMap!['Met']!),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildAminoLabel('Tyr', item.aminoMap!['Tyr']!),
-                      const SizedBox(height: 2),
-                      _buildAminoLabel('Lys', item.aminoMap!['Lys']!),
-                    ],
-                  ),
-                ],
-              ),
-            )
-          else
-            const Spacer(),
+          const Spacer(),
 
-          // [3] Числове значення та ціль
+          // [2] Числове значення та ціль (з масштабуванням при великих числах)
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -113,7 +86,9 @@ class SummaryNutrientTileWidget extends StatelessWidget {
             ),
           ),
 
-          // [4] Прогрес-бар (відображається тільки якщо встановлено ціль)
+          const SizedBox(height: 4),
+
+          // [3] Прогрес-бар (відображається тільки якщо встановлено ціль)
           if (hasTarget)
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
@@ -128,15 +103,6 @@ class SummaryNutrientTileWidget extends StatelessWidget {
             const SizedBox(height: 4),
         ],
       ),
-    );
-  }
-
-  /// Вкладений метод для побудови текстового підпису амінокислоти
-  Widget _buildAminoLabel(String name, double val) {
-    final String valStr = val % 1 == 0 ? val.toInt().toString() : val.toStringAsFixed(1);
-    return Text(
-      '$name: $valStr',
-      style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w600, color: Colors.purple.shade800),
     );
   }
 }

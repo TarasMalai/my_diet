@@ -1,8 +1,8 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: date_picker_dialog_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Кастомний діалог календаря з двома блоками дат у лівій панелі,
-//              сіткою днів місяця, навігацією та українською локалізацією.
+// ПРИЗНАЧЕННЯ: Кастомний діалог календаря з адаптивною версткою (Row для ПК,
+//               Column для смартфонів), збільшеною шапкою та кнопками дій.
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -11,7 +11,7 @@ import 'package:intl/intl.dart';
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1]: ГЛОБАЛЬНА ФУНКЦІЯ ВИКЛИКУ ДІАЛОГУ
 // ----------------------------------------------------------------------------
-/// Відкриває модальне вікно кастомного календаря із лівою панеллю.
+/// Відкриває модальне вікно кастомного календаря із лівою/нижньою панеллю.
 /// Повертає обрану дату [DateTime] або `null`, якщо користувач натиснув "Скасувати".
 Future<DateTime?> showCustomAppDatePicker({required BuildContext context, required DateTime initialDate}) {
   return showDialog<DateTime>(
@@ -73,128 +73,123 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      // Закруглення кутів вікна діалогу
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 520, // Фіксована ширина діалогового вікна
-        height: 380, // Фіксована висота діалогового вікна
-        padding: const EdgeInsets.all(16), // Внутрішній відступ від країв вікна
-        child: Row(
-          children: [
-            // ----------------------------------------------------------------
-            // [ВУЗОЛ 2.3.1]: ЛІВА ПАНЕЛЬ (Блоки "Вибрана дата" та "Поточна дата")
-            // ----------------------------------------------------------------
-            SizedBox(
-              width: 140,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // --- Верхній блок: Інформація про вибрану дату ---
-                  _buildDateBlock(label: 'Вибрана дата', date: _selectedDate, isClickable: false, onTap: null),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Автоматично визначаємо чи це мобільний екран (менше 450px)
+          final bool isMobile = MediaQuery.of(context).size.width < 450;
 
-                  const Spacer(), // Пружинний відступ для притискання нижнього блоку
-                  // --- Нижній блок: Клікабельна поточна дата ("Сьогодні") ---
-                  _buildDateBlock(
+          if (isMobile) {
+            return _buildMobileLayout(context);
+          } else {
+            return _buildDesktopLayout(context);
+          }
+        },
+      ),
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.3.1]: ДЕСКТОПНИЙ ВАРІАНТ ВЕРСТКИ (ГОРИЗОНТАЛЬНИЙ ROW)
+  // --------------------------------------------------------------------------
+  Widget _buildDesktopLayout(BuildContext context) {
+    return Container(
+      width: 530,
+      height: 390,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          // Ліва панель з двома блоками дат
+          SizedBox(
+            width: 140,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDateBlock(label: 'Вибрана дата', date: _selectedDate, isClickable: false, onTap: null),
+                const Spacer(),
+                _buildDateBlock(
+                  label: 'Поточна дата',
+                  date: _today,
+                  isClickable: true,
+                  onTap: () {
+                    setState(() {
+                      _selectedDate = _today;
+                      _displayedMonth = DateTime(_today.year, _today.month);
+                    });
+                  },
+                ),
+                const SizedBox(height: 10),
+              ],
+            ),
+          ),
+
+          const VerticalDivider(width: 24, thickness: 1, color: Colors.grey),
+
+          // Права панель із календарем та кнопками
+          Expanded(
+            child: Column(
+              children: [
+                _buildMonthHeader(),
+                const SizedBox(height: 10),
+                _buildDaysOfWeekHeader(),
+                const SizedBox(height: 6),
+                Expanded(child: _buildCalendarGrid()),
+                _buildActionButtons(context),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 2.3.2]: МОБІЛЬНИЙ ВАРІАНТ ВЕРСТКИ (ВЕРТИКАЛЬНИЙ COLUMN)
+  // --------------------------------------------------------------------------
+  Widget _buildMobileLayout(BuildContext context) {
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Шапка місяця та сітка
+            _buildMonthHeader(),
+            const SizedBox(height: 12),
+            _buildDaysOfWeekHeader(),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 230, // Фіксована висота сітки для мобільного
+              child: _buildCalendarGrid(),
+            ),
+            const Divider(height: 20, thickness: 1),
+
+            // Інформаційні блоки дат розміщуємо в один горизонтальний рядок знизу
+            Row(
+              children: [
+                Expanded(
+                  child: _buildDateBlock(label: 'Вибрана дата', date: _selectedDate, isClickable: false, onTap: null),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildDateBlock(
                     label: 'Поточна дата',
                     date: _today,
                     isClickable: true,
                     onTap: () {
                       setState(() {
-                        // Перемикаємо вибір та відкритий місяць на сьогоднішній день
                         _selectedDate = _today;
                         _displayedMonth = DateTime(_today.year, _today.month);
                       });
                     },
                   ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+                ),
+              ],
             ),
+            const SizedBox(height: 16),
 
-            // ----------------------------------------------------------------
-            // [ВУЗОЛ 2.3.2]: РОЗДІЛЮВАЧ (Вертикальна лінія)
-            // ----------------------------------------------------------------
-            const VerticalDivider(width: 24, thickness: 1, color: Colors.grey),
-
-            // ----------------------------------------------------------------
-            // [ВУЗОЛ 2.3.3]: ПРАВА ПАНЕЛЬ (Місяць, дні тижня, сітка і кнопки)
-            // ----------------------------------------------------------------
-            Expanded(
-              child: Column(
-                children: [
-                  // --- Шапка правої панелі: Назва місяця та стрілки навігації ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Текст місяця і року українською (наприклад, "серпень 2026 р.")
-                      Text(
-                        '${DateFormat('LLLL yyyy', 'uk_UA').format(_displayedMonth)} р.',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                      ),
-                      // Кнопки перемикання місяців
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.chevron_left, size: 20),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            tooltip: 'Попередній місяць',
-                            onPressed: () => _changeMonth(-1),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton(
-                            icon: const Icon(Icons.chevron_right, size: 20),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            tooltip: 'Наступний місяць',
-                            onPressed: () => _changeMonth(1),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // --- Рядок заголовків днів тижня (П, В, С, Ч, П, С, Н) ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: const [
-                      _DayHeader('П'),
-                      _DayHeader('В'),
-                      _DayHeader('С'),
-                      _DayHeader('Ч'),
-                      _DayHeader('П'),
-                      _DayHeader('С'),
-                      _DayHeader('Н'),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-
-                  // --- Основна сітка днів місяця ---
-                  Expanded(child: _buildCalendarGrid()),
-
-                  // --- Нижній блок кнопок підтвердження/скасування ---
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // Кнопка скасування (повертає null)
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(null),
-                        child: const Text('Скасувати', style: TextStyle(color: Colors.teal)),
-                      ),
-                      // Кнопка підтвердження (повертає обрану дату)
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(_selectedDate),
-                        child: const Text(
-                          'ОК',
-                          style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+            // Кнопки дій знизу
+            _buildActionButtons(context),
           ],
         ),
       ),
@@ -202,21 +197,105 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
   }
 
   // --------------------------------------------------------------------------
-  // [ВУЗОЛ 2.4]: ДОПОМІЖНІ МЕТОДИ ПОБУДОВИ ЕЛЕМЕНТІВ
+  // [ВУЗОЛ 2.4]: ДОПОМІЖНІ ВІДЖЕТИ ТА БЛОКИ
   // --------------------------------------------------------------------------
 
-  /// [ВУЗОЛ 2.4.1: _buildDateBlock]
-  /// Метод побудови текстового блоку дати для лівої панелі.
+  /// [ВУЗОЛ 2.4.1]: Збільшена шапка місяця та більші стрілочки
+  Widget _buildMonthHeader() {
+    final rawMonth = DateFormat('LLLL yyyy', 'uk_UA').format(_displayedMonth);
+    final formattedMonth = rawMonth[0].toUpperCase() + rawMonth.substring(1); // З великої літери
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Назва місяця і року (Збільшена)
+        Text(
+          '$formattedMonth р.',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.teal),
+        ),
+        // Кнопки гортання (Збільшені іконки та область кліку)
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left, size: 28),
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(),
+              tooltip: 'Попередній місяць',
+              onPressed: () => _changeMonth(-1),
+            ),
+            const SizedBox(width: 12),
+            IconButton(
+              icon: const Icon(Icons.chevron_right, size: 28),
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(),
+              tooltip: 'Наступний місяць',
+              onPressed: () => _changeMonth(1),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// [ВУЗОЛ 2.4.2]: Заголовки днів тижня
+  Widget _buildDaysOfWeekHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: const [
+        _DayHeader('П'),
+        _DayHeader('В'),
+        _DayHeader('С'),
+        _DayHeader('Ч'),
+        _DayHeader('П'),
+        _DayHeader('С'),
+        _DayHeader('Н'),
+      ],
+    );
+  }
+
+  /// [ВУЗОЛ 2.4.3]: Повноцінні виділені кнопки дій ("Скасувати" та "ОК")
+  Widget _buildActionButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        // Кнопка Скасувати
+        OutlinedButton(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.grey.shade700,
+            side: BorderSide(color: Colors.grey.shade300),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          onPressed: () => Navigator.of(context).pop(null),
+          child: const Text('Скасувати'),
+        ),
+        const SizedBox(width: 10),
+
+        // Кнопка ОК
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.teal,
+            foregroundColor: Colors.white,
+            elevation: 1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+          ),
+          onPressed: () => Navigator.of(context).pop(_selectedDate),
+          child: const Text('ОК', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+      ],
+    );
+  }
+
+  /// [ВУЗОЛ 2.4.4]: Картка відображення дати
   Widget _buildDateBlock({
     required String label,
     required DateTime date,
     required bool isClickable,
     required VoidCallback? onTap,
   }) {
-    // Перевірка: чи вибрана дата збігається з поточною системною датою ("Сьогодні")
     final bool isSameAsToday = DateUtils.isSameDay(_selectedDate, _today);
 
-    // Динамічні кольори залежно від стану
     final Color bgColor = isClickable
         ? Colors.teal.shade50
         : (isSameAsToday ? Colors.teal.shade50 : Colors.amber.shade50);
@@ -229,7 +308,6 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
         ? Colors.teal.shade800
         : (isSameAsToday ? Colors.teal.shade800 : Colors.amber.shade900);
 
-    // Форматування тексту дати українською мовою
     final String dayOfWeek = DateFormat('EEEE', 'uk_UA').format(date);
     final String dayNum = DateFormat('d', 'uk_UA').format(date);
     final String monthName = DateFormat('MMMM', 'uk_UA').format(date);
@@ -256,19 +334,19 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
             dayOfWeek,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 13, color: Colors.black87),
+            style: const TextStyle(fontSize: 12, color: Colors.black87),
           ),
           Text(
             dayNum,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black, height: 1.1),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black, height: 1.1),
           ),
           Text(
             monthName,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 13, color: Colors.black87),
+            style: const TextStyle(fontSize: 12, color: Colors.black87),
           ),
-          Text(yearNum, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+          Text(yearNum, style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
         ],
       ),
     );
@@ -278,8 +356,7 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
     return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(10), child: cardContent);
   }
 
-  /// [ВУЗОЛ 2.4.2: _buildCalendarGrid]
-  /// Побудова динамічної сітки числових днів для обраного місяця.
+  /// [ВУЗОЛ 2.4.5]: Сітка днів місяця
   Widget _buildCalendarGrid() {
     final int daysInMonth = DateUtils.getDaysInMonth(_displayedMonth.year, _displayedMonth.month);
     final DateTime firstDayOfMonth = DateTime(_displayedMonth.year, _displayedMonth.month, 1);
@@ -314,19 +391,16 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: isSelected
-                  ? Colors
-                        .teal // Вибраний день
+                  ? Colors.teal
                   : isToday
-                  ? Colors
-                        .teal
-                        .shade100 // Сьогоднішній день
+                  ? Colors.teal.shade100
                   : Colors.transparent,
               shape: BoxShape.circle,
             ),
             child: Text(
               '$dayNumber',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 color: isSelected
                     ? Colors.white
                     : isToday
@@ -345,7 +419,6 @@ class _CustomDatePickerDialogState extends State<CustomDatePickerDialog> {
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 3]: ДОПОМІЖНІ ВІДЖЕТИ
 // ----------------------------------------------------------------------------
-/// Віджет заголовка одного дня тижня в шапці сітки календаря.
 class _DayHeader extends StatelessWidget {
   final String day;
 
@@ -356,7 +429,7 @@ class _DayHeader extends StatelessWidget {
     return Center(
       child: Text(
         day,
-        style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
       ),
     );
   }

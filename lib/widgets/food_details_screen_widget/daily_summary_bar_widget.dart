@@ -1,7 +1,7 @@
 // ============================================================================
 // НАЗВА ФАЙЛУ: daily_summary_bar_widget.dart
 // ПРОЄКТ: Моя дієта
-// ПРИЗНАЧЕННЯ: Панель нутрієнтів з амінокислотами та каруселлю на 4 плитки
+// ПРИЗНАЧЕННЯ: Панель нутрієнтів з амінокислотами та каруселлю на 3/4 плитки
 // ============================================================================
 
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ import 'package:my_diet/models/summary_nutrient_item_model.dart';
 import 'package:my_diet/services/date_service.dart';
 import 'package:my_diet/services/diet_settings_service.dart';
 import 'package:my_diet/repositories/diet_repository.dart';
-import 'package:my_diet/services/summary_nutrient_factory.dart'; // <--- Новий імпорт
+import 'package:my_diet/services/summary_nutrient_factory.dart';
 import 'package:my_diet/widgets/food_details_screen_widget/daily_summary_bar_widget/summary_nutrient_tile_widget.dart';
 
 // ----------------------------------------------------------------------------
@@ -62,7 +62,7 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
               padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
               color: Colors.white,
               child: SizedBox(
-                height: 108,
+                height: 85,
                 child: Row(
                   children: [
                     IconButton(
@@ -74,7 +74,12 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
                     Expanded(
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          const int visibleCount = 4;
+                          if (items.isEmpty) return const SizedBox();
+
+                          // Якщо ширина екрана < 600px (смартфон) — показуємо 3 плитки.
+                          // Якщо >= 600px (ПК/планшет) — показуємо 4 плитки.
+                          final int targetCount = constraints.maxWidth < 600 ? 3 : 4;
+                          final int visibleCount = targetCount > items.length ? items.length : targetCount;
 
                           List<Widget> visibleCards = [];
                           for (int i = 0; i < visibleCount; i++) {
