@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 // 1. Імпортуємо ініціалізатор локалей для пакета intl
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:my_diet/screens/splash_screen.dart'; // Імпортуємо екран заставки, з якого стартуємо
+import 'package:my_diet/repositories/diet_repository.dart';
+import 'package:my_diet/services/pantry_service.dart';
 
 // ----------------------------------------------------------------------------
 // 1. ТОЧКА ВХОДУ (Функція main)
@@ -26,6 +28,12 @@ void main() async {
   // 2. Ініціалізуємо українську локаль 'uk_UA' для коректного форматування дат
   // Ключове слово `await` призупиняє виконання main(), поки локалізація не завантажиться повністю.
   await initializeDateFormatting('uk_UA', null);
+
+  // 2. Завантажуємо збережений раціон з диска (SharedPreferences)
+  await DietRepository().init();
+
+  // 3. Завантажуємо товари з комори
+  await PantryService().loadItems();
 
   // Запуск root-віджета нашого додатка
   runApp(const MyDietApp());

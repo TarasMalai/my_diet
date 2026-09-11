@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/food_item_model.dart';
 import 'package:my_diet/models/pantry_item_model.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 import 'package:my_diet/services/pantry_service.dart';
 import 'package:my_diet/services/product_search_service.dart';
 import 'package:my_diet/widgets/common_widget/app_number_input_field_widget.dart';
@@ -200,7 +200,7 @@ class _AddFoodDialogWidgetState extends State<AddFoodDialogWidget> {
         energy: (_parse(_energyController) * weight) / 100,
       );
 
-      MockDietRepository().addFoodToMeal(widget.date, widget.mealId, item);
+      DietRepository().addFoodToMeal(widget.date, widget.mealId, item);
       Navigator.of(context).pop();
     }
   }

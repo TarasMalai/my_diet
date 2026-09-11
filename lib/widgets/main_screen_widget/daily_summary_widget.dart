@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:my_diet/services/date_service.dart';
 import 'package:my_diet/services/diet_settings_service.dart';
 import 'package:my_diet/services/diet_state_service.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 import 'package:my_diet/widgets/main_screen_widget/daily_summary_widget/metric_card_widget.dart';
 import 'package:my_diet/widgets/main_screen_widget/phe_expansion_tile_widget.dart';
 
@@ -40,12 +40,12 @@ class _DailySummaryWidgetState extends State<DailySummaryWidget> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
-      valueListenable: MockDietRepository().listenable,
+      valueListenable: DietRepository().listenable,
       builder: (context, _, child) {
         return ValueListenableBuilder<DateTime>(
           valueListenable: DateService().selectedDate,
           builder: (context, currentDate, child) {
-            final meals = MockDietRepository().getMealsForDate(currentDate);
+            final meals = DietRepository().getMealsForDate(currentDate);
 
             // [ОСНОВНІ НУТРІЄНТИ]
             double totalPhe = 0;

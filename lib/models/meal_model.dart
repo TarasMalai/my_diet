@@ -24,22 +24,44 @@ class MealModel {
   const MealModel({required this.id, required this.title, this.note, required this.items});
 
   // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.3]: ГЕТТЕРИ ПІДРАХУНКУ ЗАГАЛЬНОЇ СУМИ НУТРІЄНТІВ
+  // [ВУЗОЛ 1.3]: СЕРІАЛІЗАЦІЯ З JSON (MealModel.fromJson)
   // --------------------------------------------------------------------------
-  // Автоматично сумують показники всіх продуктів у списку 'items'
+  factory MealModel.fromJson(Map<String, dynamic> json) {
+    return MealModel(
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      note: json['note']?.toString(),
+      items:
+          (json['items'] as List<dynamic>?)
+              ?.map((item) => FoodItemModel.fromJson(item as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.4]: СЕРІАЛІЗАЦІЯ В JSON (toJson)
+  // --------------------------------------------------------------------------
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'title': title, 'note': note, 'items': items.map((item) => item.toJson()).toList()};
+  }
+
+  // --------------------------------------------------------------------------
+  // [ВУЗОЛ 1.5]: ГЕТТЕРИ ПІДРАХУНКУ ЗАГАЛЬНОЇ СУМИ НУТРІЄНТІВ
+  // --------------------------------------------------------------------------
   double get totalPhe => items.fold(0.0, (sum, item) => sum + item.phe);
   double get totalCalories => items.fold(0.0, (sum, item) => sum + item.calories);
   double get totalProtein => items.fold(0.0, (sum, item) => sum + item.protein);
   double get totalCarbs => items.fold(0.0, (sum, item) => sum + item.carbs);
   double get totalFat => items.fold(0.0, (sum, item) => sum + item.fat);
 
-  // [ДОДАНО]: Геттери підрахунку амінокислот
+  // Геттери підрахунку амінокислот
   double get totalLeucine => items.fold(0.0, (sum, item) => sum + item.leucine);
   double get totalTyrosine => items.fold(0.0, (sum, item) => sum + item.tyrosine);
   double get totalMethionine => items.fold(0.0, (sum, item) => sum + item.methionine);
   double get totalLysine => items.fold(0.0, (sum, item) => sum + item.lysine);
 
-  // [ДОДАНО]: Геттери підрахунку додаткових нутрієнтів
+  // Геттери підрахунку додаткових нутрієнтів
   double get totalFiber => items.fold(0.0, (sum, item) => sum + item.fiber);
   double get totalSalt => items.fold(0.0, (sum, item) => sum + item.salt);
   double get totalSugar => items.fold(0.0, (sum, item) => sum + item.sugar);
@@ -47,7 +69,7 @@ class MealModel {
   double get totalEnergy => items.fold(0.0, (sum, item) => sum + item.energy);
 
   // --------------------------------------------------------------------------
-  // [ВУЗОЛ 1.4]: КОПІЮВАННЯ ОБ'ЄКТА З ЗМІНАМИ (copyWith)
+  // [ВУЗОЛ 1.6]: КОПІЮВАННЯ ОБ'ЄКТА З ЗМІНАМИ (copyWith)
   // --------------------------------------------------------------------------
   MealModel copyWith({String? id, String? title, String? note, List<FoodItemModel>? items}) {
     return MealModel(

@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 // [ВУЗОЛ 1]: ІМПОРТИ СЕРВІСІВ ТА РЕПОЗИТОРІЇВ
 // ----------------------------------------------------------------------------
 import 'package:my_diet/services/date_service.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1.1]: ІМПОРТИ МОДЕЛЕЙ
@@ -67,7 +67,7 @@ class FoodDetailsScreen extends StatelessWidget {
               if (text.isNotEmpty) {
                 // Зчитуємо поточну дату з DateService і додаємо новий прийом в репозиторій
                 final currentDate = DateService().selectedDate.value;
-                MockDietRepository().addMeal(currentDate, text);
+                DietRepository().addMeal(currentDate, text);
                 Navigator.of(context).pop();
               }
             },
@@ -131,7 +131,7 @@ class FoodDetailsScreen extends StatelessWidget {
               // --------------------------------------------------------------
               ValueListenableBuilder<int>(
                 // Реагує на оновлення MockDietRepository
-                valueListenable: MockDietRepository().listenable,
+                valueListenable: DietRepository().listenable,
                 builder: (context, _, child) {
                   return const DailySummaryBarWidget();
                 },
@@ -142,9 +142,9 @@ class FoodDetailsScreen extends StatelessWidget {
               // --------------------------------------------------------------
               Expanded(
                 child: ValueListenableBuilder<int>(
-                  valueListenable: MockDietRepository().listenable,
+                  valueListenable: DietRepository().listenable,
                   builder: (context, _, child) {
-                    final List<MealModel> meals = MockDietRepository().getMealsForDate(currentDate);
+                    final List<MealModel> meals = DietRepository().getMealsForDate(currentDate);
 
                     if (meals.isEmpty) {
                       return const Center(

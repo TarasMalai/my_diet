@@ -7,7 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/models/meal_model.dart';
 import 'package:my_diet/services/date_service.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1]: ГОЛОВНИЙ ВІДЖЕТ ШАПКИ КАРТКИ (MealHeaderWidget)
@@ -44,7 +44,7 @@ class MealHeaderWidget extends StatelessWidget {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             onPressed: () {
               final currentDate = DateService().selectedDate.value;
-              MockDietRepository().deleteMeal(currentDate, meal.id);
+              DietRepository().deleteMeal(currentDate, meal.id);
               Navigator.of(context).pop();
             },
             child: const Text('Видалити', style: TextStyle(color: Colors.white)),

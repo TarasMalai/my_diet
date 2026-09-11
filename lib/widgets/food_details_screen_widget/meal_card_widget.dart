@@ -11,7 +11,7 @@ import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/add_
 import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/meal_header_widget.dart';
 import 'package:my_diet/widgets/food_details_screen_widget/meal_card_widget/meal_note_widget.dart';
 import 'package:my_diet/services/date_service.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1]: ДІАЛОГОВЕ ВІКНО РЕДАГУВАННЯ НОТАТКИ (_showEditNoteDialog)
@@ -35,7 +35,7 @@ void _showEditNoteDialog(BuildContext context, MealModel meal) {
             final currentDate = DateService().selectedDate.value;
 
             // Зберігаємо нотатку у репозиторії
-            MockDietRepository().updateMealNote(currentDate, meal.id, controller.text.trim());
+            DietRepository().updateMealNote(currentDate, meal.id, controller.text.trim());
 
             Navigator.of(context).pop();
           },
@@ -121,7 +121,7 @@ class MealCardWidget extends StatelessWidget {
                       kcal: '${item.calories.toStringAsFixed(0)} ккал',
                       onDelete: () {
                         final currentDate = DateService().selectedDate.value;
-                        MockDietRepository().removeFoodFromMeal(currentDate, meal.id, item.id);
+                        DietRepository().removeFoodFromMeal(currentDate, meal.id, item.id);
                       },
                     ),
                   ),

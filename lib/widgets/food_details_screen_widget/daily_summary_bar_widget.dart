@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:my_diet/models/summary_nutrient_item_model.dart';
 import 'package:my_diet/services/date_service.dart';
 import 'package:my_diet/services/diet_settings_service.dart';
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 import 'package:my_diet/services/summary_nutrient_factory.dart'; // <--- Новий імпорт
 import 'package:my_diet/widgets/food_details_screen_widget/daily_summary_bar_widget/summary_nutrient_tile_widget.dart';
 
@@ -45,12 +45,12 @@ class _DailySummaryBarWidgetState extends State<DailySummaryBarWidget> {
     final settings = DietSettingsService();
 
     return ValueListenableBuilder<int>(
-      valueListenable: MockDietRepository().listenable,
+      valueListenable: DietRepository().listenable,
       builder: (context, _, child) {
         return ValueListenableBuilder<DateTime>(
           valueListenable: DateService().selectedDate,
           builder: (context, currentDate, child) {
-            final meals = MockDietRepository().getMealsForDate(currentDate);
+            final meals = DietRepository().getMealsForDate(currentDate);
 
             // [ВУЗОЛ 1.1]: ОТРИМАННЯ ГОТОВОГО СПИСКУ НУТРІЄНТІВ З ФАБРИКИ
             final List<SummaryNutrientItemModel> items = SummaryNutrientFactory.buildSummaryList(

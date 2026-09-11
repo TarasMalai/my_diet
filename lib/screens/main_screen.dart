@@ -12,7 +12,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_diet/services/navigation_service.dart';
 import 'package:my_diet/services/date_service.dart'; // Глобальний сервіс управління датою
-import 'package:my_diet/services/mock_diet_repository_service.dart';
+import 'package:my_diet/repositories/diet_repository.dart';
 
 // ----------------------------------------------------------------------------
 // [ВУЗОЛ 1.1]: ІМПОРТИ МОДУЛЬНИХ ВІДЖЕТІВ ТА СПІЛЬНИХ КОМПОНЕНТІВ
@@ -68,7 +68,7 @@ class _MainScreenState extends State<MainScreen> {
         // [ВУЗОЛ 2.1.1.2.1]: Слухач репозиторію
         // Реагує на лічильник оновлень репозиторію для автоматичного перемальовування
         // даних при поверненні з деталей харчування або зміні списку продуктів.
-        valueListenable: MockDietRepository().listenable,
+        valueListenable: DietRepository().listenable,
         builder: (context, _, child) {
           return ValueListenableBuilder<DateTime>(
             // [ВУЗОЛ 2.1.1.2.2]: Слухач глобальної дати
